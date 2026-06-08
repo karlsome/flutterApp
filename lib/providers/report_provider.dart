@@ -86,10 +86,8 @@ class ReportProvider with ChangeNotifier {
   String _commentsKensa = '';
 
   // Break Times
-  final List<Map<String, String>> _breaks = List.generate(
-    4,
-    (index) => {'start': '', 'end': ''},
-  );
+  List<Map<String, String>> _breaks = [];
+  DateTime? _activeBreakStartTime;
 
   // Maintenance Records
   List<MaintenanceRecord> _maintenanceRecords = [];
@@ -189,6 +187,8 @@ class ReportProvider with ChangeNotifier {
   String get commentsKensa => _commentsKensa;
 
   List<Map<String, String>> get breaks => _breaks;
+  DateTime? get activeBreakStartTime => _activeBreakStartTime;
+  bool get isCurrentlyOnBreak => _activeBreakStartTime != null;
   List<MaintenanceRecord> get maintenanceRecords => _maintenanceRecords;
   List<Map<String, dynamic>> get logQueue => _logQueue;
 
@@ -601,9 +601,40 @@ class ReportProvider with ChangeNotifier {
   }
 
   void updateBreak(int index, String field, String value) {
-    if (index >= 0 && index < 4) {
-      _breaks[index][field] = value;
-      logTabletAction('Break time', 'in-progress', {'index': index, 'field': field, 'value': value});
+    // Legacy support for older callers
+  }
+
+  void startBreak() {
+    _activeBreakStartTime = DateTime.now();
+    logTabletAction('Break started', 'in-progress', {'startTime': _activeBreakStartTime?.toIso8601String()});
+    saveDraft();
+  }
+
+  void stopBreak() {
+    if (_activeBreakStartTime == null) return;
+    final now = DateTime.now();
+    final startStr = '${_activeBreakStartTime!.hour.toString().padLeft(2, '0')}:${_activeBreakStartTime!.minute.toString().padLeft(2, '0')}';
+    final endStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    
+    _breaks.add({
+      'start': startStr,
+      'end': endStr,
+    });
+    
+    logTabletAction('Break stopped', 'completed', {
+      'start': startStr,
+      'end': endStr,
+      'durationMinutes': now.difference(_activeBreakStartTime!).inMinutes,
+    });
+    
+    _activeBreakStartTime = null;
+    saveDraft();
+  }
+
+  void removeBreak(int index) {
+    if (index >= 0 && index < _breaks.length) {
+      final removed = _breaks.removeAt(index);
+      logTabletAction('Break removed', 'deleted', removed);
       saveDraft();
     }
   }
@@ -1238,6 +1269,7 @@ class ReportProvider with ChangeNotifier {
       'spare': _spare,
       'commentsKensa': _commentsKensa,
       'breaks': _breaks,
+      'activeBreakStartTime': _activeBreakStartTime?.toIso8601String(),
       'maintenanceRecords': _maintenanceRecords.map((r) => r.toJson()).toList(),
       'setupStep': _setupStep,
       'appStage': _appStage.name,
@@ -1287,11 +1319,17 @@ class ReportProvider with ChangeNotifier {
     _spare = draft['spare'] ?? 0;
     _commentsKensa = draft['commentsKensa'] ?? '';
 
-    var breaksList = draft['breaks'] as List? ?? [];
-    for (int i = 0; i < breaksList.length && i < 4; i++) {
-      _breaks[i]['start'] = breaksList[i]['start'] ?? '';
-      _breaks[i]['end'] = breaksList[i]['end'] ?? '';
-    }
+    final draftBreaks = draft['breaks'] as List? ?? [];
+    _breaks = draftBreaks.map((item) {
+      final m = Map<String, dynamic>.from(item as Map);
+      return {
+        'start': m['start']?.toString() ?? '',
+        'end': m['end']?.toString() ?? '',
+      };
+    }).toList();
+
+    final activeStartStr = draft['activeBreakStartTime'] as String?;
+    _activeBreakStartTime = activeStartStr != null ? DateTime.parse(activeStartStr) : null;
 
     var maintList = draft['maintenanceRecords'] as List? ?? [];
     _maintenanceRecords = maintList.map((r) => MaintenanceRecord.fromJson(r as Map<String, dynamic>)).toList();
@@ -1373,10 +1411,8 @@ class ReportProvider with ChangeNotifier {
       }
     }
 
-    for (var b in _breaks) {
-      b['start'] = '';
-      b['end'] = '';
-    }
+    _breaks = [];
+    _activeBreakStartTime = null;
     _maintenanceRecords = [];
   }
 

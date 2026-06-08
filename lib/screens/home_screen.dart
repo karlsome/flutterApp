@@ -8,8 +8,6 @@ import 'dart:ui';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_config.dart';
 import '../providers/report_provider.dart';
-import '../models/product_model.dart';
-import '../models/equipment_model.dart';
 import '../widgets/product_details_sheet.dart';
 import '../widgets/qr_scanner_dialog.dart';
 import '../widgets/worker_select_sheet.dart';
@@ -1019,7 +1017,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           // Print Label Button
           SizedBox(
             width: double.infinity,
-            height: 48,
+            height: 52,
             child: ElevatedButton.icon(
               onPressed: p.isLoading
                   ? null
@@ -1053,8 +1051,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               label: Text(
                 p.isLoading ? '印刷中... / Printing...' : '現品票ラベル印刷 / Print Label',
                 style: GoogleFonts.outfit(
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.bold,
+                  height: 1.0,
                   color: p.isLoading ? AppConfig.textMuted : Colors.white,
                 ),
               ),
