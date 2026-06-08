@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
@@ -40,6 +41,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   String _scanError = '';
   bool _isScanProcessing = false;
   late final PageController _pageController;
+  late final List<ScrollController> _scrollControllers;
+  bool _isNavVisible = true;
+  static const Duration _kNavAnimDuration = Duration(milliseconds: 280);
+  static const double _kNavBarHeight = 80.0;
 
   int _stageToPageIndex(AppStage stage) {
     switch (stage) {
@@ -77,6 +82,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final provider = Provider.of<ReportProvider>(context, listen: false);
     _pageController = PageController(initialPage: _stageToPageIndex(provider.appStage));
 
+    _scrollControllers = List.generate(4, (_) => ScrollController());
+    for (final sc in _scrollControllers) {
+      sc.addListener(_handleScrollChange);
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       provider.addListener(_onProviderChange);
       
@@ -95,6 +105,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       Provider.of<ReportProvider>(context, listen: false).removeListener(_onProviderChange);
     } catch (_) {}
     _pageController.dispose();
+    for (final sc in _scrollControllers) {
+      sc.removeListener(_handleScrollChange);
+      sc.dispose();
+    }
     _processQtyController.dispose();
     _shotController.dispose();
     _dcpCommentController.dispose();
@@ -436,76 +450,258 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ],
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Workflow timeline tracker
-            const WorkflowTimeline(),
+        bottom: false,
+        child: Builder(
+          builder: (context) {
+            final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+            final systemBottomPadding = MediaQuery.of(context).padding.bottom;
+            final isKeyboardVisible = bottomInset > 0;
+            final effectiveNavVisible = _isNavVisible && !isKeyboardVisible;
+            final navBottomOffset = effectiveNavVisible ? 0.0 : -(_kNavBarHeight + systemBottomPadding);
 
-            // Background sending activity indicator
-            if (provider.isSendingToNC)
-              Container(
-                color: AppConfig.warningColor.withOpacity(0.08),
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                child: Row(
+            return Stack(
+              children: [
+                // ── Page content ──────────────────────────────────────────
+                Column(
                   children: [
-                    const SizedBox(
-                      width: 14,
-                      height: 14,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: AppConfig.warningColor),
-                    ),
-                    const SizedBox(width: 12),
+                    // Background sending activity indicator
+                    if (provider.isSendingToNC)
+                      Container(
+                        color: AppConfig.warningColor.withOpacity(0.08),
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                        child: Row(
+                          children: [
+                            const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: AppConfig.warningColor),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                '切断データをマシンへ送信中... / Sending details to machine in background...',
+                                style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppConfig.warningColor),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    // Active Stage Body
                     Expanded(
-                      child: Text(
-                        '切断データをマシンへ送信中... / Sending details to machine in background...',
-                        style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppConfig.warningColor),
+                      child: PageView(
+                        controller: _pageController,
+                        physics: provider.isSetupComplete
+                            ? const BouncingScrollPhysics()
+                            : const NeverScrollableScrollPhysics(),
+                        onPageChanged: (index) {
+                          final targetStage = _pageIndexToStage(index);
+                          if (provider.appStage != targetStage) {
+                            provider.setAppStage(targetStage);
+                          }
+                        },
+                        children: [
+                          SingleChildScrollView(
+                            key: const ValueKey('scan_stage'),
+                            controller: _scrollControllers[0],
+                            padding: EdgeInsets.fromLTRB(16, 16, 16, _kNavBarHeight + systemBottomPadding + 16),
+                            child: _buildScanStage(provider),
+                          ),
+                          SingleChildScrollView(
+                            key: const ValueKey('production_stage'),
+                            controller: _scrollControllers[1],
+                            padding: EdgeInsets.fromLTRB(16, 16, 16, _kNavBarHeight + systemBottomPadding + 16),
+                            child: _buildProductionStage(provider),
+                          ),
+                          SingleChildScrollView(
+                            key: const ValueKey('quality_stage'),
+                            controller: _scrollControllers[2],
+                            padding: EdgeInsets.fromLTRB(16, 16, 16, _kNavBarHeight + systemBottomPadding + 16),
+                            child: _buildQualityStage(provider),
+                          ),
+                          SingleChildScrollView(
+                            key: const ValueKey('submit_stage'),
+                            controller: _scrollControllers[3],
+                            padding: EdgeInsets.fromLTRB(16, 16, 16, _kNavBarHeight + systemBottomPadding + 100),
+                            child: _buildSubmitStage(provider),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ),
 
-            // Active Stage Body
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: provider.isSetupComplete
-                    ? const BouncingScrollPhysics()
-                    : const NeverScrollableScrollPhysics(),
-                onPageChanged: (index) {
-                  final targetStage = _pageIndexToStage(index);
-                  if (provider.appStage != targetStage) {
-                    provider.setAppStage(targetStage);
-                  }
-                },
-                children: [
-                  SingleChildScrollView(
-                    key: const ValueKey('scan_stage'),
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-                    child: _buildScanStage(provider),
+                // ── Bottom navigation bar ─────────────────────────────────
+                AnimatedPositioned(
+                  duration: _kNavAnimDuration,
+                  curve: Curves.easeInOut,
+                  left: 0,
+                  right: 0,
+                  bottom: navBottomOffset,
+                  child: _buildBottomNavBar(provider, systemBottomPadding),
+                ),
+
+                // ── Floating pill (shown when nav is hidden) ──────────────
+                AnimatedPositioned(
+                  duration: _kNavAnimDuration,
+                  curve: Curves.easeInOut,
+                  left: 16,
+                  bottom: effectiveNavVisible
+                      ? -56.0
+                      : systemBottomPadding + 12,
+                  child: _buildFloatingPill(activeStage),
+                ),
+
+                // ── Submit FAB (animates with nav bar) ────────────────────
+                if (activeStage == AppStage.submit)
+                  AnimatedPositioned(
+                    duration: _kNavAnimDuration,
+                    curve: Curves.easeInOut,
+                    left: 16,
+                    right: 16,
+                    bottom: effectiveNavVisible
+                        ? _kNavBarHeight + systemBottomPadding + 12
+                        : systemBottomPadding + 12,
+                    child: _buildSubmitFloatingBar(context),
                   ),
-                  SingleChildScrollView(
-                    key: const ValueKey('production_stage'),
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-                    child: _buildProductionStage(provider),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // BOTTOM NAV BAR
+  // ────────────────────────────────────────────────────────────────────────────
+  Widget _buildBottomNavBar(ReportProvider provider, double systemBottomPadding) {
+    final currentStage = provider.appStage;
+    final isScanComplete = provider.isSetupComplete;
+
+    final List<({AppStage stage, String label, IconData icon})> stages = [
+      (stage: AppStage.scan, label: 'Scan', icon: Icons.qr_code_scanner_rounded),
+      (stage: AppStage.production, label: 'Production', icon: Icons.precision_manufacturing_rounded),
+      (stage: AppStage.quality, label: 'Quality', icon: Icons.camera_alt_rounded),
+      (stage: AppStage.submit, label: 'Submit', icon: Icons.send_rounded),
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppConfig.cardColor,
+        border: const Border(top: BorderSide(color: AppConfig.borderSecondary)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: _kNavBarHeight,
+          child: Row(
+            children: stages.map((s) {
+              final isActive = currentStage == s.stage;
+              final canTap = isScanComplete || s.stage == AppStage.scan;
+
+              bool isCompleted = false;
+              if (s.stage == AppStage.scan) {
+                isCompleted = isScanComplete && currentStage != AppStage.scan;
+              } else if (s.stage == AppStage.production || s.stage == AppStage.quality) {
+                isCompleted = isScanComplete && currentStage.index > s.stage.index;
+              }
+
+              return Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: canTap
+                      ? () {
+                          HapticFeedback.lightImpact();
+                          provider.setAppStage(s.stage);
+                        }
+                      : null,
+                  child: Opacity(
+                    opacity: canTap ? 1.0 : 0.3,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: isActive
+                                ? AppConfig.primaryAccent.withAlpha(25)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Icon(
+                            isCompleted ? Icons.check_circle_rounded : s.icon,
+                            size: 22,
+                            color: isCompleted
+                                ? AppConfig.okColor
+                                : (isActive ? AppConfig.primaryAccent : AppConfig.textMuted),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          s.label,
+                          style: GoogleFonts.outfit(
+                            fontSize: 11,
+                            fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                            color: isActive ? AppConfig.primaryAccent : AppConfig.textMuted,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  SingleChildScrollView(
-                    key: const ValueKey('quality_stage'),
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-                    child: _buildQualityStage(provider),
-                  ),
-                  SingleChildScrollView(
-                    key: const ValueKey('submit_stage'),
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-                    child: _buildSubmitStage(provider),
-                  ),
-                ],
-              ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFloatingPill(AppStage stage) {
+    final List<({AppStage stage, String label, IconData icon})> stages = [
+      (stage: AppStage.scan, label: 'Scan', icon: Icons.qr_code_scanner_rounded),
+      (stage: AppStage.production, label: 'Production', icon: Icons.precision_manufacturing_rounded),
+      (stage: AppStage.quality, label: 'Quality', icon: Icons.camera_alt_rounded),
+      (stage: AppStage.submit, label: 'Submit', icon: Icons.send_rounded),
+    ];
+    final current = stages.firstWhere((s) => s.stage == stage, orElse: () => stages.first);
+
+    return GestureDetector(
+      onTap: () => setState(() => _isNavVisible = true),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppConfig.cardColor,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: AppConfig.primaryAccent.withAlpha(80)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(current.icon, size: 16, color: AppConfig.primaryAccent),
+            const SizedBox(width: 6),
+            Text(
+              current.label,
+              style: GoogleFonts.outfit(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppConfig.primaryAccent,
+              ),
+            ),
+            const SizedBox(width: 6),
+            const Icon(Icons.keyboard_arrow_up_rounded, size: 16, color: AppConfig.primaryAccent),
+          ],
+        ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: activeStage == AppStage.submit ? _buildSubmitFloatingBar(context) : null,
     );
   }
 
@@ -917,6 +1113,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     p.setAppStage(AppStage.production); // Auto advance to allow typing other inputs in parallel
     p.sendToNC(); // Start in background
   }
+
+  void _handleScrollChange() {
+    if (!mounted) return;
+    for (final sc in _scrollControllers) {
+      if (!sc.hasClients) continue;
+      final dir = sc.position.userScrollDirection;
+      if (dir == ScrollDirection.reverse && _isNavVisible) {
+        setState(() => _isNavVisible = false);
+        return;
+      }
+      if (dir == ScrollDirection.forward && !_isNavVisible) {
+        setState(() => _isNavVisible = true);
+        return;
+      }
+    }
+  }
+
 
   // ────────────────────────────────────────────────────────────────────────────
   // STAGE 2: PRODUCTION BODY
@@ -2245,89 +2458,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 // ────────────────────────────────────────────────────────────────────────────
 // CUSTOM COMPONENT WIDGETS
 // ────────────────────────────────────────────────────────────────────────────
-class WorkflowTimeline extends StatelessWidget {
-  const WorkflowTimeline({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final provider = context.watch<ReportProvider>();
-    final currentStage = provider.appStage;
-    final isScanComplete = provider.isSetupComplete;
-
-    final List<Map<String, dynamic>> stages = [
-      {'stage': AppStage.scan, 'label': '段取り検証\nScan', 'icon': Icons.qr_code_scanner_rounded},
-      {'stage': AppStage.production, 'label': '加工記録\nProduction', 'icon': Icons.precision_manufacturing_rounded},
-      {'stage': AppStage.quality, 'label': '品質確認\nQuality', 'icon': Icons.camera_alt_rounded},
-      {'stage': AppStage.submit, 'label': '記録提出\nSubmit', 'icon': Icons.send_rounded},
-    ];
-
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      decoration: const BoxDecoration(
-        color: AppConfig.cardColor,
-        border: Border(bottom: BorderSide(color: AppConfig.borderSecondary)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: List.generate(stages.length, (index) {
-          final s = stages[index];
-          final stage = s['stage'] as AppStage;
-          final label = s['label'] as String;
-          final icon = s['icon'] as IconData;
-          final isActive = currentStage == stage;
-          
-          bool isCompleted = false;
-          if (stage == AppStage.scan) {
-            isCompleted = isScanComplete;
-          } else if (stage == AppStage.production) {
-            isCompleted = isScanComplete && currentStage.index > stage.index;
-          } else if (stage == AppStage.quality) {
-            isCompleted = isScanComplete && currentStage.index > stage.index;
-          }
-
-          final canTap = isScanComplete || stage == AppStage.scan;
-
-          return Expanded(
-            child: GestureDetector(
-              onTap: canTap
-                  ? () {
-                      HapticFeedback.lightImpact();
-                      provider.setAppStage(stage);
-                    }
-                  : null,
-              child: Opacity(
-                opacity: canTap ? 1.0 : 0.35,
-                child: Column(
-                  children: [
-                    Icon(
-                      isCompleted ? Icons.check_circle_rounded : icon,
-                      color: isCompleted
-                          ? AppConfig.okColor
-                          : (isActive ? AppConfig.primaryAccent : AppConfig.textMuted),
-                      size: 22,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      label,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.outfit(
-                        fontSize: 10,
-                        fontWeight: isActive ? FontWeight.w800 : FontWeight.w500,
-                        color: isActive ? AppConfig.primaryAccent : AppConfig.textSecondary,
-                        height: 1.2,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }),
-      ),
-    );
-  }
-}
-
 class TouchCounterCard extends StatelessWidget {
   final String label;
   final String subLabel;
