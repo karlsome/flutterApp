@@ -84,7 +84,10 @@ class Product {
       feedPitch: json['送りピッチ']?.toString() ?? '',
       releasePaper: rikeshi,
       srs: json['SRS']?.toString() ?? '',
-      imageUrl: json['imageURL']?.toString() ?? '',
+      imageUrl: json['imageURL']?.toString() ?? 
+                json['imageUrl']?.toString() ?? 
+                json['htmlWebsite']?.toString() ?? 
+                '',
     );
   }
 

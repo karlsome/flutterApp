@@ -16,90 +16,85 @@ class ProductDetailsSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ReportProvider>();
-    return Container(
-      decoration: const BoxDecoration(
+    return SafeArea(
+      child: Container(
         color: AppConfig.backgroundColor,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.88,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Handle
-          Center(
-            child: Container(
-              width: 50,
-              height: 5,
-              decoration: BoxDecoration(
-                color: AppConfig.borderSecondary,
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          // Header
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: AppConfig.primaryAccent.withAlpha(30),
-                  borderRadius: BorderRadius.circular(12),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppConfig.primaryAccent.withAlpha(30),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.info_outline_rounded,
+                      color: AppConfig.primaryAccent, size: 24),
                 ),
-                child: const Icon(Icons.info_outline_rounded,
-                    color: AppConfig.primaryAccent, size: 24),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Text(
-                  '製品詳細 / Product Specs',
-                  style: GoogleFonts.outfit(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: AppConfig.textPrimary,
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    '製品詳細 / Product Specs',
+                    style: GoogleFonts.outfit(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppConfig.textPrimary,
+                    ),
                   ),
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.close_rounded,
-                    color: AppConfig.textMuted),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // Product image
-          if (product.imageUrl.isNotEmpty)
+                IconButton(
+                  icon: const Icon(Icons.close_rounded,
+                      color: AppConfig.textMuted),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // Product image section
             Center(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 16),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: AppConfig.borderRadius,
-                    border: Border.all(color: AppConfig.borderSecondary, width: 2),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: AppConfig.borderRadius,
-                    child: Image.network(
-                      product.imageUrl,
-                      height: 160,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        height: 80,
-                        color: AppConfig.cardColor,
-                        child: const Center(
-                          child: Icon(Icons.broken_image_rounded,
-                              color: AppConfig.textMuted, size: 36),
-                        ),
-                      ),
+                child: GestureDetector(
+                  onTap: product.imageUrl.isNotEmpty ? () => _showImagePreview(context, product.imageUrl) : null,
+                  child: Container(
+                    height: 160,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: AppConfig.cardColor,
+                      borderRadius: AppConfig.borderRadius,
+                      border: Border.all(color: AppConfig.borderSecondary, width: 2),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: AppConfig.borderRadius,
+                      child: product.imageUrl.isNotEmpty
+                          ? Image.network(
+                              product.imageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.broken_image_rounded, color: AppConfig.textMuted, size: 40),
+                                    SizedBox(height: 8),
+                                    Text('画像読み込み失敗 / Load Failed', style: TextStyle(color: AppConfig.textMuted, fontSize: 12)),
+                                  ],
+                                ),
+                              ),
+                            )
+                          : const Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.image_not_supported_rounded, color: AppConfig.textMuted, size: 40),
+                                  SizedBox(height: 8),
+                                  Text('製品画像なし / No Image Available', style: TextStyle(color: AppConfig.textMuted, fontSize: 12)),
+                                ],
+                              ),
+                            ),
                     ),
                   ),
                 ),
@@ -178,8 +173,9 @@ class ProductDetailsSheet extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _row(String label, String value, {bool highlight = false}) {
     return Padding(
@@ -213,6 +209,42 @@ class ProductDetailsSheet extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showImagePreview(BuildContext context, String imageUrl) {
+    if (imageUrl.isEmpty) return;
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.9),
+      builder: (ctx) => GestureDetector(
+        onTap: () => Navigator.of(ctx).pop(),
+        behavior: HitTestBehavior.opaque,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            InteractiveViewer(
+              child: Center(
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Center(
+                    child: Icon(Icons.broken_image_rounded, color: Colors.white, size: 64),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 40,
+              right: 20,
+              child: IconButton(
+                icon: const Icon(Icons.close_rounded, color: Colors.white, size: 32),
+                onPressed: () => Navigator.of(ctx).pop(),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

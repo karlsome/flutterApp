@@ -864,6 +864,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // Product Thumbnail & Sebanggo/Hinban Header Card
+        _buildProductThumbnailHeader(p),
+        const SizedBox(height: 16),
+
         // 1. Process Core Inputs
         _buildProductionHeaderCard(p),
         const SizedBox(height: 16),
@@ -1007,6 +1011,39 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             focusNode: _labelExtFocus,
             isNumeric: false,
             onChanged: (v) => p.setLabelExtension(v),
+          ),
+          const SizedBox(height: 16),
+          // Material Scanning Card
+          _buildMaterialScanSection(p),
+          const SizedBox(height: 16),
+          // Print Label Button
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                try {
+                  await p.triggerPrint(context);
+                  if (mounted) {
+                    _showSnack(context, '印刷指示を送信しました / Print instruction sent');
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    _showSnack(context, e.toString().replaceFirst('Exception: ', ''), isError: true);
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppConfig.okColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              icon: const Icon(Icons.print_rounded, size: 20),
+              label: Text(
+                '現品票ラベル印刷 / Print Label',
+                style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold),
+              ),
+            ),
           ),
         ],
       ),
@@ -1889,6 +1926,227 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProductThumbnailHeader(ReportProvider p) {
+    final product = p.activeProduct;
+    final hasImg = product.imageUrl.isNotEmpty;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppConfig.cardColor,
+        borderRadius: AppConfig.cardRadius,
+        border: Border.all(color: AppConfig.borderSecondary),
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: hasImg ? () => _showProductImagePreview(context, product.imageUrl) : null,
+            child: Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: AppConfig.backgroundColor,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppConfig.borderSecondary, width: 1.5),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: hasImg
+                    ? Image.network(
+                        product.imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Center(
+                          child: Icon(Icons.broken_image_rounded, color: AppConfig.textMuted, size: 28),
+                        ),
+                      )
+                    : const Center(
+                        child: Icon(Icons.image_not_supported_rounded, color: AppConfig.textMuted, size: 28),
+                      ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  product.sebanggo.isNotEmpty ? product.sebanggo : '背番号なし / No Sebanggo',
+                  style: GoogleFonts.outfit(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: AppConfig.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '品番: ${product.productNumber.isNotEmpty ? product.productNumber : '未スキャン / Not Scanned'}',
+                  style: GoogleFonts.outfit(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppConfig.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMaterialScanSection(ReportProvider p) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppConfig.backgroundColor,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppConfig.borderSecondary),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '材料ロット / Material Lot',
+                style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppConfig.textSecondary),
+              ),
+              SizedBox(
+                height: 28,
+                child: OutlinedButton.icon(
+                  onPressed: () => _scanMaterialInProduction(p),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    side: const BorderSide(color: AppConfig.primaryAccent),
+                  ),
+                  icon: const Icon(Icons.qr_code_scanner_rounded, size: 14),
+                  label: Text('スキャン / Scan', style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+          if (p.materialLots.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: p.materialLots.map((lot) {
+                return Chip(
+                  backgroundColor: AppConfig.cardColor,
+                  side: const BorderSide(color: AppConfig.borderSecondary),
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  label: Text(
+                    lot,
+                    style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold, color: AppConfig.textPrimary),
+                  ),
+                  onDeleted: () {
+                    p.removeMaterialLot(lot);
+                    _showSnack(context, 'ロット $lot を削除しました / Removed Lot: $lot');
+                  },
+                  deleteIcon: const Icon(Icons.cancel_rounded, size: 14, color: AppConfig.textMuted),
+                );
+              }).toList(),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _scanMaterialInProduction(ReportProvider p) {
+    setState(() => _scanError = '');
+    final expectedMat = p.activeProduct.materialCode;
+
+    QrScannerDialog.show(
+      context: context,
+      title: '材料追加スキャン / Scan Material Lot',
+      instruction: '材料の現品票QRコードをスキャンしてください\nScan Material QR code',
+      onScanSuccess: (value) async {
+        final parts = value.split(',');
+        if (parts.length < 2) {
+          _showSnack(context, '❌ 無効なQRコード / Invalid QR code', isError: true);
+          return;
+        }
+        final scannedMatCode = parts[0].trim();
+        final lotNumber = parts[1].trim();
+
+        final validCodes = expectedMat.split(',').map((c) => c.trim()).where((c) => c.isNotEmpty);
+        if (!validCodes.contains(scannedMatCode)) {
+          _showSnack(context, '❌ 材料コード不一致 / Material code mismatch\nExpected: $expectedMat\nScanned: $scannedMatCode', isError: true);
+          return;
+        }
+
+        if (p.materialLots.contains(lotNumber)) {
+          _showSnack(context, '⚠️ 既にスキャン済みのロットです / Lot already scanned: $lotNumber', isError: true);
+          return;
+        }
+
+        await Future.delayed(const Duration(milliseconds: 300));
+
+        if (context.mounted) {
+          _showSnack(context, '材料スキャン成功。ラベル写真を撮影してください。/ Scan OK. Please capture the label photo.');
+        }
+        
+        try {
+          final XFile? image = await _picker.pickImage(source: ImageSource.camera, imageQuality: 70);
+          if (image != null) {
+            p.addMaterialLotWithPhoto(lotNumber, image.path);
+            if (context.mounted) {
+              _showSnack(context, '材料ロットと写真を登録しました / Registered Lot: $lotNumber');
+            }
+          } else {
+            if (context.mounted) {
+              _showSnack(context, '❌ 写真撮影がキャンセルされたため、登録されませんでした / Cancelled: Lot $lotNumber not registered', isError: true);
+            }
+          }
+        } catch (e) {
+          if (context.mounted) {
+            _showSnack(context, 'カメラ起動エラー / Camera Error: $e', isError: true);
+          }
+        }
+      },
+    );
+  }
+
+  void _showProductImagePreview(BuildContext context, String imageUrl) {
+    if (imageUrl.isEmpty) return;
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.9),
+      builder: (ctx) => GestureDetector(
+        onTap: () => Navigator.of(ctx).pop(),
+        behavior: HitTestBehavior.opaque,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            InteractiveViewer(
+              child: Center(
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Center(
+                    child: Icon(Icons.broken_image_rounded, color: Colors.white, size: 64),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 40,
+              right: 20,
+              child: IconButton(
+                icon: const Icon(Icons.close_rounded, color: Colors.white, size: 32),
+                onPressed: () => Navigator.of(ctx).pop(),
+              ),
+            ),
+          ],
         ),
       ),
     );

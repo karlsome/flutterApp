@@ -73,6 +73,7 @@ class ReportProvider with ChangeNotifier {
   
   // Material label photo paths
   List<String> _materialLabelPhotos = [];
+  Map<String, String> _lotToPhotoMap = {};
 
   // Kensa Form Toggles & Inputs
   bool _isKensaEnabled = false;
@@ -176,6 +177,7 @@ class ReportProvider with ChangeNotifier {
   String get atomonoPhotoPath => _atomonoPhotoPath;
   bool get atomonoChecked => _atomonoChecked;
   List<String> get materialLabelPhotos => _materialLabelPhotos;
+  Map<String, String> get lotToPhotoMap => _lotToPhotoMap;
 
   bool get isKensaEnabled => _isKensaEnabled;
   String get kensaName => _kensaName;
@@ -368,6 +370,34 @@ class ReportProvider with ChangeNotifier {
       if (details != null) {
         _activeProduct = details;
         _apiService.updateGoogleSheetStatus(_sebanggo, _selectedMachine);
+        
+        // Fallback to Google Apps Script if imageURL is empty in MongoDB
+        if (_activeProduct.imageUrl.isEmpty) {
+          try {
+            final key = _activeProduct.productNumber.isNotEmpty ? _activeProduct.productNumber : _sebanggo;
+            final fallbackUrl = await _fetchFallbackProductImageUrl(key);
+            if (fallbackUrl.isNotEmpty) {
+              _activeProduct = Product(
+                sebanggo: _activeProduct.sebanggo,
+                productNumber: _activeProduct.productNumber,
+                model: _activeProduct.model,
+                shape: _activeProduct.shape,
+                rl: _activeProduct.rl,
+                material: _activeProduct.material,
+                materialCode: _activeProduct.materialCode,
+                materialColor: _activeProduct.materialColor,
+                kataban: _activeProduct.kataban,
+                capacity: _activeProduct.capacity,
+                feedPitch: _activeProduct.feedPitch,
+                releasePaper: _activeProduct.releasePaper,
+                srs: _activeProduct.srs,
+                imageUrl: fallbackUrl,
+              );
+            }
+          } catch (err) {
+            print('Failed to load fallback product image: $err');
+          }
+        }
       } else {
         _activeProduct = Product.empty();
       }
@@ -377,6 +407,22 @@ class ReportProvider with ChangeNotifier {
     _isLoading = false;
     notifyListeners();
     saveDraft();
+  }
+
+  Future<String> _fetchFallbackProductImageUrl(String key) async {
+    const String picURL = 'https://script.google.com/macros/s/AKfycbwHUW1ia8hNZG-ljsguNq8K4LTPVnB6Ng_GLXIHmtJTdUgGGd2WoiQo9ToF-7PvcJh9bA/exec';
+    try {
+      final response = await http.get(Uri.parse('$picURL?link=$key')).timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final cleaned = response.body.replaceAll('"', '').trim();
+        if (cleaned.isNotEmpty && (cleaned.startsWith('http://') || cleaned.startsWith('https://'))) {
+          return '$cleaned&sz=s4000';
+        }
+      }
+    } catch (e) {
+      print('Error fetching fallback product image: $e');
+    }
+    return '';
   }
 
   void setWorkerName(String name) {
@@ -429,9 +475,24 @@ class ReportProvider with ChangeNotifier {
     saveDraft();
   }
 
-  void removeMaterialLot(String lot) {
-    _materialLots.remove(lot);
+  void addMaterialLotWithPhoto(String lot, String photoPath) {
+    if (lot.isEmpty || _materialLots.contains(lot)) return;
+    _materialLots.add(lot);
+    _materialLabelPhotos.add(photoPath);
+    _lotToPhotoMap[lot] = photoPath;
     saveDraft();
+  }
+
+  void removeMaterialLot(String lot) {
+    if (_materialLots.contains(lot)) {
+      _materialLots.remove(lot);
+      final photoPath = _lotToPhotoMap[lot];
+      if (photoPath != null) {
+        _materialLabelPhotos.remove(photoPath);
+        _lotToPhotoMap.remove(lot);
+      }
+      saveDraft();
+    }
   }
 
   void incrementDcpCounter(int counterId) {
@@ -483,7 +544,17 @@ class ReportProvider with ChangeNotifier {
 
   void removeMaterialLabelPhoto(int index) {
     if (index >= 0 && index < _materialLabelPhotos.length) {
-      _materialLabelPhotos.removeAt(index);
+      final path = _materialLabelPhotos.removeAt(index);
+      String? lotToRemove;
+      _lotToPhotoMap.forEach((lot, photo) {
+        if (photo == path) {
+          lotToRemove = lot;
+        }
+      });
+      if (lotToRemove != null) {
+        _materialLots.remove(lotToRemove);
+        _lotToPhotoMap.remove(lotToRemove);
+      }
       saveDraft();
     }
   }
@@ -676,8 +747,7 @@ class ReportProvider with ChangeNotifier {
       }
     }
 
-    final String printPayload = 'brotherwebprint://print?' +
-        'filename=${Uri.encodeComponent(filename)}' +
+    final String printParams = 'filename=${Uri.encodeComponent(filename)}' +
         '&size=RollW62&copies=1' +
         '&text_品番=${Uri.encodeComponent(productNum)}' +
         '&text_車型=${Uri.encodeComponent(carType)}' +
@@ -690,21 +760,43 @@ class ReportProvider with ChangeNotifier {
         '&text_setsubi=${Uri.encodeComponent(machine)}' +
         '&barcode_barcode=${Uri.encodeComponent("$productNum,$capacity")}';
 
-    // In a real device, launch the scheme
-    importLauncherAndLaunch(printPayload);
-  }
-
-  void importLauncherAndLaunch(String url) async {
-    final uri = Uri.parse(url);
-    try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-        print('Launched print URL successfully: $url');
-      } else {
-        print('Could not launch print URL: $url');
+    if (Platform.isIOS) {
+      final String printPayload = 'brotherwebprint://print?$printParams';
+      final uri = Uri.parse(printPayload);
+      try {
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+          print('Launched print URL successfully: $printPayload');
+        } else {
+          throw Exception('iOS Brother Print scheme could not be launched / 印刷アプリを起動できませんでした');
+        }
+      } catch (e) {
+        throw Exception('Error launching print: $e');
       }
-    } catch (e) {
-      print('Error launching print URL: $e');
+    } else {
+      // Android / Desktop / other platforms: local HTTP request to port 8088
+      final String printPayload = 'http://localhost:8088/print?$printParams';
+      _isLoading = true;
+      notifyListeners();
+      try {
+        final response = await http.get(Uri.parse(printPayload)).timeout(const Duration(seconds: 7));
+        if (response.statusCode == 200 && response.body.contains('<result>SUCCESS</result>')) {
+          print('Print success on local printer server');
+        } else {
+          throw Exception('Printing failed. Check printer status / 印刷に失敗しました。プリンターのステータスを確認してください。');
+        }
+      } catch (e) {
+        print('HTTP print failed: $e. Attempting fallback launchUrl...');
+        final fallbackUri = Uri.parse(printPayload);
+        if (await canLaunchUrl(fallbackUri)) {
+          await launchUrl(fallbackUri, mode: LaunchMode.externalApplication);
+        } else {
+          throw Exception('Local printer server error / プリンターサーバー通信エラー: $e');
+        }
+      } finally {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -1122,6 +1214,7 @@ class ReportProvider with ChangeNotifier {
       'atomonoPhotoPath': _atomonoPhotoPath,
       'atomonoChecked': _atomonoChecked,
       'materialLabelPhotos': _materialLabelPhotos,
+      'lotToPhotoMap': _lotToPhotoMap,
       'isKensaEnabled': _isKensaEnabled,
       'kensaName': _kensaName,
       'kensaDate': _kensaDate.toIso8601String(),
@@ -1162,6 +1255,14 @@ class ReportProvider with ChangeNotifier {
     _atomonoPhotoPath = draft['atomonoPhotoPath'] ?? '';
     _atomonoChecked = draft['atomonoChecked'] ?? false;
     _materialLabelPhotos = List<String>.from(draft['materialLabelPhotos'] ?? []);
+    final Map<String, dynamic>? lotToPhotoMapData = draft['lotToPhotoMap'] != null
+        ? Map<String, dynamic>.from(draft['lotToPhotoMap'])
+        : null;
+    if (lotToPhotoMapData != null) {
+      _lotToPhotoMap = lotToPhotoMapData.map((k, v) => MapEntry(k, v as String));
+    } else {
+      _lotToPhotoMap = {};
+    }
 
     _isKensaEnabled = draft['isKensaEnabled'] ?? false;
     _kensaName = draft['kensaName'] ?? '';
@@ -1239,6 +1340,7 @@ class ReportProvider with ChangeNotifier {
     _atomonoPhotoPath = '';
     _atomonoChecked = false;
     _materialLabelPhotos = [];
+    _lotToPhotoMap = {};
 
     _isKensaEnabled = false;
     _kensaName = '';
