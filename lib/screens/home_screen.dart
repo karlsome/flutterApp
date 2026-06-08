@@ -403,6 +403,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           ? Image.network(
                               provider.activeProduct.imageUrl,
                               fit: BoxFit.cover,
+                              cacheWidth: 100,
                               errorBuilder: (_, __, ___) => const Icon(Icons.info_outline, size: 20, color: AppConfig.primaryAccent),
                             )
                           : const Icon(Icons.info_outline, size: 20, color: AppConfig.primaryAccent),
@@ -1533,6 +1534,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       child: Image.file(
                         File(photoPath),
                         fit: BoxFit.cover,
+                        cacheWidth: 200,
                       ),
                     )
                   : const Icon(
@@ -1652,6 +1654,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     child: Image.file(
                       File(p.materialLabelPhotos[i]),
                       fit: BoxFit.cover,
+                      cacheWidth: 150,
                     ),
                   ),
                   Positioned(
@@ -2035,6 +2038,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ? Image.network(
                         product.imageUrl,
                         fit: BoxFit.cover,
+                        cacheWidth: 150,
                         errorBuilder: (_, __, ___) => const Center(
                           child: Icon(Icons.broken_image_rounded, color: AppConfig.textMuted, size: 28),
                         ),

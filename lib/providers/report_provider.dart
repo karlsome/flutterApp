@@ -976,32 +976,39 @@ class ReportProvider with ChangeNotifier {
     notifyListeners();
 
     final now = DateTime.now().millisecondsSinceEpoch;
-    final List<Map<String, dynamic>> failedItems = [];
 
-    for (var log in _logQueue) {
+    // Create a snapshot copy of the queue to avoid ConcurrentModificationError
+    // when new items are added to _logQueue in the background during network calls.
+    final queueSnapshot = List<Map<String, dynamic>>.from(_logQueue);
+
+    for (var log in queueSnapshot) {
       if (log['nextRetryTime'] > now) {
-        failedItems.add(log);
         continue;
       }
 
       int attempts = log['attempts'] as int? ?? 0;
       final success = await _apiService.postTabletLog(log['logData'] as Map<String, dynamic>);
       
-      if (!success) {
+      if (success) {
+        // Success: Remove this log from the real queue
+        _logQueue.removeWhere((item) => item['id'] == log['id']);
+      } else {
         attempts++;
         if (attempts < 5) {
-          log['attempts'] = attempts;
-          // Exponential backoff retry delay (2s, 4s, 8s, 16s...)
-          log['nextRetryTime'] = now + (2000 * (1 << attempts));
-          failedItems.add(log);
+          // Failure: update attempts and backoff in the real queue
+          final actualLogIndex = _logQueue.indexWhere((item) => item['id'] == log['id']);
+          if (actualLogIndex != -1) {
+            _logQueue[actualLogIndex]['attempts'] = attempts;
+            _logQueue[actualLogIndex]['nextRetryTime'] = now + (2000 * (1 << attempts));
+          }
         } else {
-          // Drop log after 5 failed retries
+          // Drop log after 5 failed retries: remove from the real queue
           print('Dropping log after 5 failures: ${log['id']}');
+          _logQueue.removeWhere((item) => item['id'] == log['id']);
         }
       }
     }
 
-    _logQueue = failedItems;
     await _storageService.saveLogQueue(_logQueue);
     _isSyncingLogs = false;
     notifyListeners();
