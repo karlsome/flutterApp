@@ -1021,27 +1021,42 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             width: double.infinity,
             height: 48,
             child: ElevatedButton.icon(
-              onPressed: () async {
-                try {
-                  await p.triggerPrint(context);
-                  if (mounted) {
-                    _showSnack(context, '印刷指示を送信しました / Print instruction sent');
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    _showSnack(context, e.toString().replaceFirst('Exception: ', ''), isError: true);
-                  }
-                }
-              },
+              onPressed: p.isLoading
+                  ? null
+                  : () async {
+                      try {
+                        await p.triggerPrint(context);
+                        if (mounted) {
+                          _showSnack(context, '印刷指示を送信しました / Print instruction sent');
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          _showSnack(context, e.toString().replaceFirst('Exception: ', ''), isError: true);
+                        }
+                      }
+                    },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppConfig.okColor,
+                backgroundColor: p.isLoading ? AppConfig.borderSecondary : AppConfig.okColor,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-              icon: const Icon(Icons.print_rounded, size: 20),
+              icon: p.isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppConfig.textMuted,
+                      ),
+                    )
+                  : const Icon(Icons.print_rounded, size: 20),
               label: Text(
-                '現品票ラベル印刷 / Print Label',
-                style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold),
+                p.isLoading ? '印刷中... / Printing...' : '現品票ラベル印刷 / Print Label',
+                style: GoogleFonts.outfit(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: p.isLoading ? AppConfig.textMuted : Colors.white,
+                ),
               ),
             ),
           ),

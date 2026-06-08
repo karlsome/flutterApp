@@ -761,6 +761,8 @@ class ReportProvider with ChangeNotifier {
         '&barcode_barcode=${Uri.encodeComponent("$productNum,$capacity")}';
 
     if (Platform.isIOS) {
+      _isLoading = true;
+      notifyListeners();
       final String printPayload = 'brotherwebprint://print?$printParams';
       final uri = Uri.parse(printPayload);
       try {
@@ -772,22 +774,34 @@ class ReportProvider with ChangeNotifier {
         }
       } catch (e) {
         throw Exception('Error launching print: $e');
+      } finally {
+        _isLoading = false;
+        notifyListeners();
       }
     } else {
       // Android / Desktop / other platforms: local HTTP request to port 8088
-      final String printPayload = 'http://localhost:8088/print?$printParams';
+      final String printPayload127 = 'http://127.0.0.1:8088/print?$printParams';
+      final String printPayloadLocal = 'http://localhost:8088/print?$printParams';
       _isLoading = true;
       notifyListeners();
       try {
-        final response = await http.get(Uri.parse(printPayload)).timeout(const Duration(seconds: 7));
+        http.Response response;
+        try {
+          response = await http.get(Uri.parse(printPayload127)).timeout(const Duration(seconds: 4));
+        } catch (e) {
+          print('HTTP print to 127.0.0.1 failed: $e. Retrying with localhost...');
+          response = await http.get(Uri.parse(printPayloadLocal)).timeout(const Duration(seconds: 4));
+        }
+
         if (response.statusCode == 200 && response.body.contains('<result>SUCCESS</result>')) {
           print('Print success on local printer server');
         } else {
-          throw Exception('Printing failed. Check printer status / 印刷に失敗しました。プリンターのステータスを確認してください。');
+          print('Local printer server failed: status=${response.statusCode}, body=${response.body}');
+          throw Exception('Printing failed. Check printer status / 印刷に失敗しました。プリンターのステータスを確認してください。\nDetails: Status ${response.statusCode}, Body: ${response.body}');
         }
       } catch (e) {
         print('HTTP print failed: $e. Attempting fallback launchUrl...');
-        final fallbackUri = Uri.parse(printPayload);
+        final fallbackUri = Uri.parse(printPayloadLocal);
         if (await canLaunchUrl(fallbackUri)) {
           await launchUrl(fallbackUri, mode: LaunchMode.externalApplication);
         } else {
