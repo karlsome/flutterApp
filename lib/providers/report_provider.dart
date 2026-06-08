@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 import '../models/product_model.dart';
 import '../models/maintenance_model.dart';
@@ -18,6 +20,16 @@ class ReportProvider with ChangeNotifier {
   String _selectedMachine = 'OZNC01';
   bool _isLoading = false;
   bool _isSubmitting = false;
+  bool _isSendingToNC = false;
+
+  // Worker registry names list
+  List<String> _workers = [];
+
+  // Available product uniform numbers (sebanggos) list
+  List<String> _sebanggoList = [];
+
+  // Setup Scan Wizard Step (1: Scan Kanban, 2: Scan Material, 3: Send to Machine/Thomson Board, 0: Completed/Ready)
+  int _setupStep = 1;
 
   // Form State Properties
   String _sessionID = '';
@@ -78,8 +90,26 @@ class ReportProvider with ChangeNotifier {
   String get selectedMachine => _selectedMachine;
   bool get isLoading => _isLoading;
   bool get isSubmitting => _isSubmitting;
+  bool get isSendingToNC => _isSendingToNC;
+  List<String> get workers => _workers;
+  List<String> get sebanggoList => _sebanggoList;
+  int get setupStep => _setupStep;
+  bool get isSetupComplete => _setupStep == 0 && _sebanggo.isNotEmpty;
   String get sessionID => _sessionID;
   String get sebanggo => _sebanggo;
+
+  void setSetupStep(int step) {
+    _setupStep = step;
+    saveDraft();
+    notifyListeners();
+  }
+
+  void resetSetupWorkflow() {
+    _resetFormFields();
+    _setupStep = 1;
+    saveDraft();
+    notifyListeners();
+  }
   Product get activeProduct => _activeProduct;
   
   String get workerName => _workerName;
@@ -213,6 +243,16 @@ class ReportProvider with ChangeNotifier {
 
     // Load log queue
     _logQueue = await _storageService.getLogQueue();
+
+    // Fetch worker names registry and sebanggo list
+    try {
+      _workers = await _apiService.fetchWorkerNames(factory);
+      _sebanggoList = await _apiService.fetchSebanggoList(factory, machine);
+    } catch (e) {
+      print('Error fetching environment data: $e');
+      _workers = [];
+      _sebanggoList = [];
+    }
 
     _isLoading = false;
     notifyListeners();
@@ -525,9 +565,80 @@ class ReportProvider with ChangeNotifier {
   }
 
   void importLauncherAndLaunch(String url) async {
-    // Implement launch with url_launcher package inside UI or service wrapper
-    // Since we'll do this in widgets, we track the action here
-    print('Launching print URL: $url');
+    final uri = Uri.parse(url);
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        print('Launched print URL successfully: $url');
+      } else {
+        print('Could not launch print URL: $url');
+      }
+    } catch (e) {
+      print('Error launching print URL: $e');
+    }
+  }
+
+  Future<void> sendToNC(BuildContext context) async {
+    if (_sebanggo.isEmpty) {
+      throw Exception('背番号が必要です / Sebanggo is required');
+    }
+
+    _isSendingToNC = true;
+    notifyListeners();
+
+    final machine = _selectedMachine;
+    logTabletAction('Send to machine pressed (Main button)', 'in-progress', {
+      'sebanggo': _sebanggo,
+      'source': 'Main Send to Machine button'
+    });
+
+    try {
+      final ipAddress = await _apiService.resolveEquipmentPrinterIP(machine);
+      if (ipAddress.isEmpty) {
+        throw Exception('IP address is empty');
+      }
+
+      final url = 'http://$ipAddress:5000/request?filename=$_sebanggo.pce';
+      print('Sending command to machine: $url');
+
+      final uri = Uri.parse(url);
+      
+      final response = await http.get(uri).timeout(const Duration(seconds: 10));
+      logTabletAction('Send to machine success', 'Completed', {
+        'machine': machine,
+        'sebanggo': _sebanggo,
+        'ipAddress': ipAddress,
+        'status': response.statusCode
+      });
+    } catch (e) {
+      print('HTTP request to machine failed: $e. Attempting fallback via url_launcher...');
+      try {
+        final ipAddress = await _apiService.resolveEquipmentPrinterIP(machine);
+        final url = 'http://$ipAddress:5000/request?filename=$_sebanggo.pce';
+        final uri = Uri.parse(url);
+        
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+          logTabletAction('Send to machine success (fallback launch)', 'Completed', {
+            'machine': machine,
+            'sebanggo': _sebanggo,
+            'ipAddress': ipAddress,
+          });
+        } else {
+          throw Exception('Cannot launch URL: $url');
+        }
+      } catch (fallbackErr) {
+        logTabletAction('Send to machine failed', 'failed', {
+          'machine': machine,
+          'sebanggo': _sebanggo,
+          'error': fallbackErr.toString(),
+        });
+        rethrow;
+      }
+    } finally {
+      _isSendingToNC = false;
+      notifyListeners();
+    }
   }
 
   // Offline retry logging logic
@@ -605,13 +716,49 @@ class ReportProvider with ChangeNotifier {
   String? validateForm() {
     if (_sebanggo.isEmpty) return '背番号を選択してください / Please select sebanggo';
     if (_workerName.isEmpty) return '作業者名を選択または入力してください / Please select worker';
+    
     if (_startTime.isEmpty || _endTime.isEmpty) return '加工開始・終了時間を入力してください / Start/end times required';
+    if (_startTime == _endTime) {
+      return '加工開始時間と加工終了時間は同じにできません\nStart Time and End Time cannot be the same';
+    }
+    try {
+      final startParts = _startTime.split(':');
+      final endParts = _endTime.split(':');
+      final startMin = int.parse(startParts[0]) * 60 + int.parse(startParts[1]);
+      final endMin = int.parse(endParts[0]) * 60 + int.parse(endParts[1]);
+      if (startMin >= endMin) {
+        return '加工開始時間は加工終了時間より前である必要があります\nStart Time must be before End Time';
+      }
+    } catch (_) {
+      return '加工時間の形式が正しくありません / Invalid work time format';
+    }
+
     if (_materialLots.isEmpty) return '材料ロットを入力してください / Material lot number required';
+    
+    if (_materialLabelPhotos.length < _materialLots.length) {
+      return '材料ラベルの写真が不足しています。ロット数: ${_materialLots.length}個、写真数: ${_materialLabelPhotos.length}枚\n'
+             'Please capture a material label photo for each lot (Lots: ${_materialLots.length}, Photos: ${_materialLabelPhotos.length})';
+    }
+
     if (!_hatsumonoChecked) return '初物チェックを完了してください / Please complete Hatsumono check';
     
     if (_isKensaEnabled) {
       if (_kensaName.isEmpty) return '検査者を選択または入力してください / Inspector name required';
       if (_kensaStartTime.isEmpty || _kensaEndTime.isEmpty) return '検査開始・終了時間を入力してください / Inspection times required';
+      if (_kensaStartTime == _kensaEndTime) {
+        return '検査開始時間と検査終了時間は同じにできません\nInspection Start and End Time cannot be the same';
+      }
+      try {
+        final startParts = _kensaStartTime.split(':');
+        final endParts = _kensaEndTime.split(':');
+        final startMin = int.parse(startParts[0]) * 60 + int.parse(startParts[1]);
+        final endMin = int.parse(endParts[0]) * 60 + int.parse(endParts[1]);
+        if (startMin >= endMin) {
+          return '検査開始時間は検査終了時間より前である必要があります\nInspection Start Time must be before End Time';
+        }
+      } catch (_) {
+        return '検査時間の形式が正しくありません / Invalid inspection time format';
+      }
     }
     
     return null;
@@ -739,6 +886,19 @@ class ReportProvider with ChangeNotifier {
         payload['Counters'] = {
           for (int i = 0; i < 12; i++) 'counter-${i + 1}': _kensaCounters[i]
         };
+        payload['Inspector_Name'] = _kensaName;
+        payload['Inspection_Date'] = DateFormat('yyyy-MM-dd').format(_kensaDate);
+        payload['Inspection_Time_start'] = _kensaStartTime;
+        payload['Inspection_Time_end'] = _kensaEndTime;
+        payload['Inspection_Comment'] = _commentsKensa;
+        payload['Inspection_Spare'] = _spare;
+        
+        int kensaNG = 0;
+        for (var count in _kensaCounters) {
+          kensaNG += count;
+        }
+        payload['Inspection_Total_NG'] = kensaNG;
+        payload['Inspection_Good_Total'] = finalGoodQuantity;
       }
 
       final result = await _apiService.submitToDCP(payload);
@@ -814,6 +974,7 @@ class ReportProvider with ChangeNotifier {
       'commentsKensa': _commentsKensa,
       'breaks': _breaks,
       'maintenanceRecords': _maintenanceRecords.map((r) => r.toJson()).toList(),
+      'setupStep': _setupStep,
     };
     await _storageService.saveDraft(_selectedFactory, _selectedMachine, draftMap);
   }
@@ -829,6 +990,7 @@ class ReportProvider with ChangeNotifier {
     _endTime = draft['endTime'] ?? '';
     _shotCount = draft['shotCount'] ?? 0;
     _materialLots = List<String>.from(draft['materialLots'] ?? []);
+    _setupStep = draft['setupStep'] ?? 1;
     _defectPull = draft['defectPull'] ?? 0;
     _processingDefect = draft['processingDefect'] ?? 0;
     _otherDefect = draft['otherDefect'] ?? 0;
@@ -875,6 +1037,7 @@ class ReportProvider with ChangeNotifier {
     _sebanggo = '';
     _sessionID = '';
     _activeProduct = Product.empty();
+    _setupStep = 1;
     _workerName = '';
     _processQuantity = 0;
     _workDate = DateTime.now();

@@ -12,6 +12,7 @@ import '../widgets/qr_scanner_dialog.dart';
 import '../widgets/worker_select_sheet.dart';
 import '../widgets/maintenance_dialog.dart';
 import '../widgets/break_time_section.dart';
+import '../widgets/setup_wizard_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -47,13 +48,6 @@ class _HomeScreenState extends State<HomeScreen>
       curve: Curves.easeOut,
     );
     _headerAnimController.forward();
-
-    _scrollController.addListener(() {
-      final collapsed = _scrollController.offset > 80;
-      if (collapsed != _isHeaderCollapsed) {
-        setState(() => _isHeaderCollapsed = collapsed);
-      }
-    });
   }
 
   @override
@@ -198,23 +192,37 @@ class _HomeScreenState extends State<HomeScreen>
             _buildProductHeader(context),
             const Divider(color: AppConfig.borderSecondary, height: 1),
             Expanded(
-              child: FadeTransition(
-                opacity: _headerFade,
-                child: ListView(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
-                  children: [
-                    _buildDcpSection(context),
-                    const SizedBox(height: 16),
-                    _buildCycleCheckSection(context),
-                    const SizedBox(height: 16),
-                    _buildBreakSection(context),
-                    const SizedBox(height: 16),
-                    _buildMaintenanceSection(context),
-                    const SizedBox(height: 16),
-                    _buildKensaSection(context),
-                  ],
-                ),
+              child: Consumer<ReportProvider>(
+                builder: (_, p, __) {
+                  final isWizardActive = p.setupStep != 0;
+                  return Stack(
+                    children: [
+                      AbsorbPointer(
+                        absorbing: isWizardActive,
+                        child: Opacity(
+                          opacity: isWizardActive ? 0.35 : 1.0,
+                          child: ListView(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+                            children: [
+                              _buildDcpSection(context),
+                              const SizedBox(height: 16),
+                              _buildCycleCheckSection(context),
+                              const SizedBox(height: 16),
+                              _buildBreakSection(context),
+                              const SizedBox(height: 16),
+                              _buildMaintenanceSection(context),
+                              const SizedBox(height: 16),
+                              _buildKensaSection(context),
+                            ],
+                          ),
+                        ),
+                      ),
+                      if (isWizardActive)
+                        _buildSetupWizardOverlay(context, p),
+                    ],
+                  );
+                },
               ),
             ),
           ],
@@ -223,6 +231,85 @@ class _HomeScreenState extends State<HomeScreen>
       // Floating action submit button
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: _buildSubmitBar(context),
+    );
+  }
+
+  Widget _buildSetupWizardOverlay(BuildContext context, ReportProvider p) {
+    return Container(
+      color: Colors.black.withOpacity(0.04),
+      alignment: Alignment.center,
+      padding: const EdgeInsets.all(24),
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 460),
+        decoration: BoxDecoration(
+          color: AppConfig.cardColor,
+          borderRadius: AppConfig.cardRadius,
+          border: Border.all(color: AppConfig.borderSecondary, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppConfig.warningColor.withOpacity(0.12),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.lock_outline_rounded,
+                color: AppConfig.warningColor,
+                size: 48,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              '段取りスキャン検証未完了\nSetup Validation Incomplete',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.outfit(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppConfig.textPrimary,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '作業を開始するには、背番号・材料ロットの照合段取りスキャン（STEP 1〜3）を完了させてください。',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.outfit(
+                fontSize: 13,
+                color: AppConfig.textSecondary,
+                height: 1.6,
+              ),
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton.icon(
+                onPressed: () => SetupWizardDialog.show(context),
+                icon: const Icon(Icons.flash_on_rounded, color: Colors.white, size: 20),
+                label: const Text(
+                  '段取り検証を開始する / Start Setup',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppConfig.primaryAccent,
+                  shape: RoundedRectangleBorder(borderRadius: AppConfig.borderRadius),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -324,12 +411,10 @@ class _HomeScreenState extends State<HomeScreen>
                   builder: (_) => ProductDetailsSheet(product: product),
                 )
             : null,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          padding: EdgeInsets.symmetric(
+        child: Container(
+          padding: const EdgeInsets.symmetric(
             horizontal: 16,
-            vertical: _isHeaderCollapsed ? 10 : 16,
+            vertical: 14,
           ),
           decoration: const BoxDecoration(color: AppConfig.backgroundColor),
           child: Row(
@@ -362,7 +447,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   Widget _buildSebanggoScanner(BuildContext ctx, ReportProvider p) {
     return GestureDetector(
-      onTap: () => _openScanner(ctx, 'sebanggo'),
+      onTap: () => SetupWizardDialog.show(ctx),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         width: 90,
@@ -644,6 +729,10 @@ class _HomeScreenState extends State<HomeScreen>
             ),
             const SizedBox(height: 16),
 
+            // Send to Machine button
+            _buildSendToMachineButton(context),
+            const SizedBox(height: 12),
+
             // Print button
             _buildPrintButton(context),
           ],
@@ -657,7 +746,7 @@ class _HomeScreenState extends State<HomeScreen>
     return GestureDetector(
       onTap: () => WorkerSelectSheet.show(
         context: ctx,
-        allWorkers: const [],  // Fetched from recents; manual entry always available
+        allWorkers: p.workers,
         role: isKensa ? 'kensa' : 'worker',
         factory: p.selectedFactory,
         onSelected: (selected) {
@@ -1019,6 +1108,79 @@ class _HomeScreenState extends State<HomeScreen>
       ),
       onChanged: onChanged,
     );
+  }
+
+  Widget _buildSendToMachineButton(BuildContext ctx) {
+    return Consumer<ReportProvider>(builder: (_, p, __) {
+      final isEnabled = p.sebanggo.isNotEmpty && !p.isSendingToNC;
+      return SizedBox(
+        width: double.infinity,
+        height: 52,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          decoration: BoxDecoration(
+            gradient: isEnabled ? AppConfig.primaryGradient : null,
+            color: isEnabled ? null : AppConfig.cardColor,
+            borderRadius: AppConfig.borderRadius,
+            border: Border.all(
+              color: isEnabled ? Colors.transparent : AppConfig.borderSecondary,
+              width: 1,
+            ),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: AppConfig.borderRadius,
+              onTap: isEnabled
+                  ? () async {
+                      try {
+                        await p.sendToNC(ctx);
+                        if (ctx.mounted) {
+                          _showSnack(ctx, 'マシンにデータを送信しました / Data sent to machine successfully!');
+                        }
+                      } catch (e) {
+                        if (ctx.mounted) {
+                          _showSnack(ctx, e.toString().replaceFirst('Exception: ', ''),
+                              isError: true);
+                        }
+                      }
+                    }
+                  : null,
+              child: Center(
+                child: p.isSendingToNC
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.precision_manufacturing_rounded,
+                            color: isEnabled ? Colors.white : AppConfig.textMuted,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '機械に送信 / Send to Machine',
+                            style: GoogleFonts.outfit(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: isEnabled ? Colors.white : AppConfig.textMuted,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+          ),
+        ),
+      );
+    });
   }
 
   Widget _buildPrintButton(BuildContext ctx) {
@@ -1497,6 +1659,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   Widget _buildSubmitBar(BuildContext context) {
     return Consumer<ReportProvider>(builder: (_, p, __) {
+      if (p.setupStep != 0) return const SizedBox.shrink();
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Container(

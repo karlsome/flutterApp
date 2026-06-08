@@ -10,6 +10,9 @@ import 'screens/setup_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Disable dynamic web font fetching to optimize for offline/low-performance tablets
+  GoogleFonts.config.allowRuntimeFetching = false;
+
   // Force portrait orientation on phones; allow both on tablets
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -20,9 +23,9 @@ void main() async {
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
+      statusBarIconBrightness: Brightness.dark,
       systemNavigationBarColor: AppConfig.backgroundColor,
-      systemNavigationBarIconBrightness: Brightness.light,
+      systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );
 
@@ -44,9 +47,9 @@ class KurachiApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        brightness: Brightness.dark,
+        brightness: Brightness.light,
         scaffoldBackgroundColor: AppConfig.backgroundColor,
-        colorScheme: const ColorScheme.dark(
+        colorScheme: const ColorScheme.light(
           surface: AppConfig.backgroundColor,
           primary: AppConfig.primaryAccent,
           onPrimary: Colors.white,
@@ -54,7 +57,7 @@ class KurachiApp extends StatelessWidget {
           error: AppConfig.ngColor,
         ),
         textTheme: GoogleFonts.outfitTextTheme(
-          ThemeData.dark().textTheme,
+          ThemeData.light().textTheme,
         ),
         cardTheme: CardThemeData(
           color: AppConfig.cardColor,

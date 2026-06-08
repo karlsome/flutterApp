@@ -56,7 +56,7 @@ class ApiService {
         if (response.statusCode == 200) {
           final List<dynamic> data = json.decode(response.body);
           list = data
-              .map((item) => item['背番号']?.toString()?.trim() ?? '')
+              .map((item) => item['背番号']?.toString().trim() ?? '')
               .where((item) => item.isNotEmpty)
               .toSet()
               .toList();
