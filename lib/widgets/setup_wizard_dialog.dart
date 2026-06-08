@@ -170,8 +170,8 @@ class _SetupWizardDialogState extends State<SetupWizardDialog> {
               decoration: const BoxDecoration(
                 color: AppConfig.cardColor,
                 borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(18),
-                  topRight: Radius.circular(18),
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
                 ),
               ),
               child: Row(
@@ -316,7 +316,7 @@ class _SetupWizardDialogState extends State<SetupWizardDialog> {
                 ? AppConfig.okColor
                 : (isActive ? AppConfig.primaryAccent : AppConfig.borderSecondary),
             child: isDone
-                ? const Icon(Icons.check, color: Colors.white, size: 18)
+                ? const Icon(Icons.check, color: AppConfig.onAccent, size: 18)
                 : Text(
                     '$step',
                     style: TextStyle(
@@ -363,8 +363,8 @@ class _SetupWizardDialogState extends State<SetupWizardDialog> {
         const SizedBox(height: 24),
         ElevatedButton.icon(
           onPressed: _isProcessing ? null : () => _startStep1Scan(p),
-          icon: const Icon(Icons.qr_code_scanner_rounded, size: 22, color: Colors.white),
-          label: const Text('背番号スキャン / Scan Kanban', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          icon: const Icon(Icons.qr_code_scanner_rounded, size: 22, color: AppConfig.onAccent),
+          label: const Text('背番号スキャン / Scan Kanban', style: const TextStyle(color: AppConfig.onAccent, fontWeight: FontWeight.bold)),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppConfig.primaryAccent,
             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -404,8 +404,8 @@ class _SetupWizardDialogState extends State<SetupWizardDialog> {
         const SizedBox(height: 20),
         ElevatedButton.icon(
           onPressed: () => _startStep2Scan(p),
-          icon: const Icon(Icons.qr_code_scanner_rounded, size: 22, color: Colors.white),
-          label: const Text('材料ラベルをスキャン / Scan Material', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          icon: const Icon(Icons.qr_code_scanner_rounded, size: 22, color: AppConfig.onAccent),
+          label: const Text('材料ラベルをスキャン / Scan Material', style: const TextStyle(color: AppConfig.onAccent, fontWeight: FontWeight.bold)),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppConfig.primaryAccent,
             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -440,8 +440,8 @@ class _SetupWizardDialogState extends State<SetupWizardDialog> {
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: () => _startStep3BoardScan(p),
-            icon: const Icon(Icons.qr_code_scanner_rounded, size: 22, color: Colors.white),
-            label: const Text('型番QRをスキャン / Scan Thomson Board', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            icon: const Icon(Icons.qr_code_scanner_rounded, size: 22, color: AppConfig.onAccent),
+            label: const Text('型番QRをスキャン / Scan Thomson Board', style: const TextStyle(color: AppConfig.onAccent, fontWeight: FontWeight.bold)),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppConfig.primaryAccent,
               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -479,12 +479,12 @@ class _SetupWizardDialogState extends State<SetupWizardDialog> {
               ? const SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                  child: CircularProgressIndicator(color: AppConfig.onAccent, strokeWidth: 2),
                 )
-              : const Icon(Icons.send_rounded, size: 20, color: Colors.white),
+              : const Icon(Icons.send_rounded, size: 20, color: AppConfig.onAccent),
           label: Text(
             p.isSendingToNC ? '送信中... / Sending...' : 'マシンへ送信 / Send to Machine',
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            style: const TextStyle(color: AppConfig.onAccent, fontWeight: FontWeight.bold),
           ),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppConfig.okColor,

@@ -136,7 +136,7 @@ class _CompactCounter extends StatelessWidget {
       duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
         color: hasValue ? activeColor.withAlpha(20) : AppConfig.cardColor,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppConfig.borderRadius,
         border: Border.all(
           color: hasValue ? activeColor.withAlpha(80) : AppConfig.borderSecondary,
         ),
@@ -155,7 +155,7 @@ class _CompactCounter extends StatelessWidget {
           if (subLabel != null)
             Text(
               subLabel!,
-              style: GoogleFonts.outfit(fontSize: 9, color: AppConfig.textMuted),
+              style: GoogleFonts.outfit(fontSize: 10, color: AppConfig.textMuted),
             ),
           const SizedBox(height: 4),
           Text(

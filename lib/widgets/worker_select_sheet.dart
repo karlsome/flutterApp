@@ -91,8 +91,8 @@ class _WorkerSelectSheetState extends State<WorkerSelectSheet> {
       decoration: const BoxDecoration(
         color: AppConfig.backgroundColor,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
         ),
       ),
       padding: EdgeInsets.fromLTRB(24, 20, 24, 20 + keyboardHeight),
@@ -191,7 +191,7 @@ class _WorkerSelectSheetState extends State<WorkerSelectSheet> {
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(borderRadius: AppConfig.borderRadius),
                     ),
-                    child: const Text('確定 / Confirm', style: TextStyle(color: AppConfig.textPrimary, fontWeight: FontWeight.bold)),
+                    child: const Text('確定 / Confirm', style: TextStyle(color: AppConfig.onAccent, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
@@ -241,7 +241,7 @@ class _WorkerSelectSheetState extends State<WorkerSelectSheet> {
                         backgroundColor: AppConfig.cardColor,
                         shadowColor: Colors.black26,
                         elevation: 2,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(borderRadius: AppConfig.radiusMd),
                         onPressed: () {
                           widget.onSelected(name);
                           Navigator.pop(context);
@@ -253,7 +253,7 @@ class _WorkerSelectSheetState extends State<WorkerSelectSheet> {
                   },
                 ),
               ),
-              const SizedBox(height: 15),
+              const SizedBox(height: 16),
             ],
 
             Text(
@@ -284,7 +284,7 @@ class _WorkerSelectSheetState extends State<WorkerSelectSheet> {
                             decoration: BoxDecoration(
                               color: AppConfig.cardColor,
                               border: Border.all(color: AppConfig.borderSecondary),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: AppConfig.borderRadius,
                             ),
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             child: Text(

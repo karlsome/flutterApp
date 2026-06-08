@@ -82,8 +82,8 @@ class _QrScannerDialogState extends State<QrScannerDialog> {
               decoration: const BoxDecoration(
                 color: AppConfig.cardColor,
                 borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(18),
-                  topRight: Radius.circular(18),
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
                 ),
               ),
               child: Row(
@@ -163,7 +163,7 @@ class _QrScannerDialogState extends State<QrScannerDialog> {
                         widget.instruction,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                            color: AppConfig.textPrimary, fontSize: 13),
+                            color: AppConfig.onAccent, fontSize: 13),
                       ),
                     ),
                   ),
@@ -191,7 +191,7 @@ class _QrScannerDialogState extends State<QrScannerDialog> {
                   child: const Text(
                     'キャンセル / Cancel',
                     style: TextStyle(
-                        color: AppConfig.textPrimary,
+                        color: AppConfig.onAccent,
                         fontSize: 16,
                         fontWeight: FontWeight.bold),
                   ),

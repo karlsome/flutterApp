@@ -69,7 +69,7 @@ class BreakTimeSection extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
                     color: AppConfig.backgroundColor,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: AppConfig.radiusMd,
                     border: Border.all(color: AppConfig.borderSecondary),
                   ),
                   child: Row(
@@ -180,9 +180,9 @@ class BreakTimeSection extends StatelessWidget {
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: AppConfig.primaryAccent,
-          foregroundColor: Colors.white,
+          foregroundColor: AppConfig.onAccent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppConfig.borderRadius,
           ),
           elevation: 2,
         ),
@@ -203,7 +203,7 @@ class BreakTimeSection extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppConfig.warningColor.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppConfig.borderRadius,
         border: Border.all(color: AppConfig.warningColor.withOpacity(0.3), width: 1.5),
       ),
       child: Column(
@@ -216,7 +216,7 @@ class BreakTimeSection extends StatelessWidget {
                   color: AppConfig.warningColor,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.coffee_rounded, color: Colors.white, size: 20),
+                child: const Icon(Icons.coffee_rounded, color: AppConfig.onAccent, size: 20),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -244,9 +244,9 @@ class BreakTimeSection extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           SizedBox(
-            height: 44,
+            height: AppConfig.touchTarget,
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: () {
@@ -256,7 +256,7 @@ class BreakTimeSection extends StatelessWidget {
                 foregroundColor: AppConfig.warningColor,
                 side: const BorderSide(color: AppConfig.warningColor, width: 1.5),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: AppConfig.borderRadius,
                 ),
               ),
               icon: const Icon(Icons.timer_rounded, size: 18),

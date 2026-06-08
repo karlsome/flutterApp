@@ -107,6 +107,7 @@ class _KurachiAppState extends State<KurachiApp> {
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: AppConfig.cardColor,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           border: OutlineInputBorder(
             borderRadius: AppConfig.borderRadius,
             borderSide: const BorderSide(color: AppConfig.borderSecondary),
@@ -125,11 +126,34 @@ class _KurachiAppState extends State<KurachiApp> {
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: AppConfig.primaryAccent,
-            foregroundColor: Colors.white,
+            foregroundColor: AppConfig.onAccent,
+            minimumSize: const Size(double.minPositive, AppConfig.buttonHeight),
             shape: RoundedRectangleBorder(borderRadius: AppConfig.borderRadius),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
             textStyle: GoogleFonts.outfit(
               fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size(double.minPositive, AppConfig.buttonHeight),
+            shape: RoundedRectangleBorder(borderRadius: AppConfig.borderRadius),
+            side: const BorderSide(color: AppConfig.borderSecondary),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+            textStyle: GoogleFonts.outfit(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            minimumSize: const Size(double.minPositive, AppConfig.touchTarget),
+            shape: RoundedRectangleBorder(borderRadius: AppConfig.borderRadius),
+            textStyle: GoogleFonts.outfit(
+              fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           ),

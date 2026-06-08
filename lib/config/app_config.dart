@@ -36,9 +36,31 @@ class AppConfig {
   static const Color textSecondary = Color(0xFF475569); // Slate 600
   static const Color textMuted = Color(0xFF94A3B8); // Slate 400
 
-  // Standard border radius
-  static final BorderRadius borderRadius = BorderRadius.circular(16);
-  static final BorderRadius cardRadius = BorderRadius.circular(20);
+  // ── Border radius scale ──────────────────────────────────────────────────────
+  static final BorderRadius radiusSm   = BorderRadius.circular(8);   // chips, badges, small containers
+  static final BorderRadius radiusMd   = BorderRadius.circular(12);  // inputs, secondary buttons
+  static final BorderRadius borderRadius = BorderRadius.circular(16); // standard buttons, cards
+  static final BorderRadius cardRadius = BorderRadius.circular(20);   // large cards, sheets, dialogs
+
+  // ── Spacing scale — 8pt grid ─────────────────────────────────────────────────
+  static const double sp4  = 4;
+  static const double sp8  = 8;
+  static const double sp12 = 12;
+  static const double sp16 = 16;
+  static const double sp20 = 20;
+  static const double sp24 = 24;
+  static const double sp32 = 32;
+  static const double sp48 = 48;
+  static const double sp64 = 64;
+
+  // ── Component sizes (Fitts's Law minimums) ───────────────────────────────────
+  static const double touchTarget  = 48; // minimum tap target
+  static const double buttonHeight = 52; // standard button height
+  static const double inputHeight  = 56; // standard text field height
+
+  // ── Semantic color aliases (replaces hardcoded Colors.white / Colors.black) ──
+  static const Color onAccent    = Color(0xFFFFFFFF); // text/icons on colored backgrounds
+  static const Color overlayDark = Color(0xFF000000); // base for dark overlays
 
   // Modern Linear Gradient
   static const LinearGradient primaryGradient = LinearGradient(

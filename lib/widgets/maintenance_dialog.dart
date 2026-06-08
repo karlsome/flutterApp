@@ -198,7 +198,7 @@ class _MaintenanceDialogState extends State<MaintenanceDialog> {
                         horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: AppConfig.warningColor.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: AppConfig.radiusMd,
                       border: Border.all(
                           color: AppConfig.warningColor.withOpacity(0.4)),
                     ),
@@ -253,7 +253,7 @@ class _MaintenanceDialogState extends State<MaintenanceDialog> {
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(Icons.close_rounded,
-                                size: 14, color: Colors.white),
+                                size: 14, color: AppConfig.onAccent),
                           ),
                         ),
                       ),
@@ -273,7 +273,7 @@ class _MaintenanceDialogState extends State<MaintenanceDialog> {
                 onPressed: _save,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppConfig.warningColor,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppConfig.onAccent,
                   shape: RoundedRectangleBorder(
                       borderRadius: AppConfig.borderRadius),
                 ),
@@ -355,7 +355,7 @@ class _MaintenanceDialogState extends State<MaintenanceDialog> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: AppConfig.warningColor.withOpacity(0.12),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: AppConfig.radiusMd,
           border:
               Border.all(color: AppConfig.warningColor.withOpacity(0.4)),
         ),

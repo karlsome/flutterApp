@@ -74,7 +74,7 @@ class _ActiveBreakDialogState extends State<ActiveBreakDialog> {
         return PopScope(
           canPop: false, // Prevent dismissing with android back button
           child: Dialog.fullscreen(
-            backgroundColor: Colors.black.withOpacity(0.95),
+            backgroundColor: AppConfig.overlayDark.withOpacity(0.95),
             child: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -103,7 +103,7 @@ class _ActiveBreakDialogState extends State<ActiveBreakDialog> {
                           style: GoogleFonts.outfit(
                             fontSize: 24,
                             fontWeight: FontWeight.w800,
-                            color: Colors.white,
+                            color: AppConfig.onAccent,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -169,11 +169,11 @@ class _ActiveBreakDialogState extends State<ActiveBreakDialog> {
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppConfig.ngColor,
-                                foregroundColor: Colors.white,
+                                foregroundColor: AppConfig.onAccent,
                                 elevation: 8,
                                 shadowColor: AppConfig.ngColor.withOpacity(0.4),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: AppConfig.cardRadius,
                                 ),
                               ),
                               icon: const Icon(Icons.stop_circle_rounded, size: 28),

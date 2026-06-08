@@ -153,11 +153,11 @@ class ProductDetailsSheet extends StatelessWidget {
           // Close button
           SizedBox(
             width: double.infinity,
-            height: 52,
-            child: ElevatedButton(
+            height: AppConfig.buttonHeight,
+            child: OutlinedButton(
               onPressed: () => Navigator.pop(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppConfig.borderSecondary,
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: AppConfig.borderSecondary, width: 1.5),
                 shape: RoundedRectangleBorder(
                     borderRadius: AppConfig.borderRadius),
               ),
@@ -166,7 +166,7 @@ class ProductDetailsSheet extends StatelessWidget {
                 style: GoogleFonts.outfit(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: AppConfig.textPrimary,
+                  color: AppConfig.textSecondary,
                 ),
               ),
             ),
@@ -179,7 +179,7 @@ class ProductDetailsSheet extends StatelessWidget {
 
   Widget _row(String label, String value, {bool highlight = false}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 9),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
