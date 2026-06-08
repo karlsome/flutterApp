@@ -2,14 +2,19 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
+import '../config/app_config.dart';
 import '../models/product_model.dart';
 import '../models/maintenance_model.dart';
+import '../models/equipment_model.dart';
 import '../services/api_service.dart';
 import '../services/storage_service.dart';
+
+enum AppStage { setup, scan, production, quality, submit }
 
 class ReportProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
@@ -21,6 +26,14 @@ class ReportProvider with ChangeNotifier {
   bool _isLoading = false;
   bool _isSubmitting = false;
   bool _isSendingToNC = false;
+  bool _ncSendSuccess = false;
+  String? _ncSendError;
+
+  AppStage _appStage = AppStage.scan;
+  List<String> _factories = [];
+  List<Equipment> _equipments = [];
+  Equipment _activeEquipment = Equipment.empty();
+  Map<String, int> _groupedShots = {};
 
   // Worker registry names list
   List<String> _workers = [];
@@ -91,8 +104,36 @@ class ReportProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isSubmitting => _isSubmitting;
   bool get isSendingToNC => _isSendingToNC;
+  bool get ncSendSuccess => _ncSendSuccess;
+  String? get ncSendError => _ncSendError;
   List<String> get workers => _workers;
   List<String> get sebanggoList => _sebanggoList;
+
+  AppStage get appStage => _appStage;
+  List<String> get factories => _factories;
+  List<Equipment> get equipments => _equipments;
+  Equipment get activeEquipment => _activeEquipment;
+  Map<String, int> get groupedShots => _groupedShots;
+  bool get isGroupedMachine => _selectedMachine.contains(',');
+
+  void setAppStage(AppStage stage) {
+    if (_appStage == stage) return;
+    _appStage = stage;
+    saveDraft();
+    notifyListeners();
+  }
+
+  void setGroupedShot(String machine, int count) {
+    _groupedShots[machine] = count;
+    notifyListeners();
+    saveDraft();
+  }
+
+  void clearNcSendStatus() {
+    _ncSendSuccess = false;
+    _ncSendError = null;
+    notifyListeners();
+  }
   int get setupStep => _setupStep;
   bool get isSetupComplete => _setupStep == 0 && _sebanggo.isNotEmpty;
   String get sessionID => _sessionID;
@@ -118,7 +159,12 @@ class ReportProvider with ChangeNotifier {
   String get labelExtension => _labelExtension;
   String get startTime => _startTime;
   String get endTime => _endTime;
-  int get shotCount => _shotCount;
+  int get shotCount {
+    if (isGroupedMachine) {
+      return _groupedShots.values.fold(0, (sum, val) => sum + val);
+    }
+    return _shotCount;
+  }
   List<String> get materialLots => _materialLots;
   int get defectPull => _defectPull;
   int get processingDefect => _processingDefect;
@@ -232,6 +278,32 @@ class ReportProvider with ChangeNotifier {
 
     _selectedFactory = factory;
     _selectedMachine = machine;
+
+    // Load active equipment from database setsubiDB if not a group
+    try {
+      _equipments = await _apiService.fetchEquipmentList(factory);
+      final match = _equipments.firstWhere(
+        (eq) => eq.name == machine,
+        orElse: () => Equipment.empty(),
+      );
+      _activeEquipment = match;
+    } catch (e) {
+      print('Error loading active equipment details: $e');
+      _activeEquipment = Equipment.empty();
+    }
+
+    // Determine if environment is a single or grouped machine
+    final bool grouped = _selectedMachine.contains(',');
+    if (grouped) {
+      _isKensaEnabled = false;
+      _groupedShots = {};
+      final list = _selectedMachine.split(',');
+      for (var m in list) {
+        _groupedShots[m] = 0;
+      }
+    } else {
+      _groupedShots = {};
+    }
 
     // Load draft
     final draft = await _storageService.loadDraft(factory, machine);
@@ -494,9 +566,63 @@ class ReportProvider with ChangeNotifier {
   }
 
   // Print Deep Link Redirection
-  Future<void> triggerPrint(BuildContext context) async {
+  Future<void> triggerPrint(BuildContext context, {int? chosenCapacity}) async {
     if (_sebanggo.isEmpty) {
       throw Exception('背番号が必要です / Sebanggo is required');
+    }
+
+    final List<String> specialSebanggos = [
+      "P05K", "P06K", "P07K", "P08K", "P13K", "P14K", "P15K", "P16K",
+      "UFS5", "UFS6", "UFS7", "UFS8", "URB5", "URB6", "URB7", "URB8"
+    ];
+
+    if (specialSebanggos.contains(_sebanggo) && chosenCapacity == null) {
+      final int? capacity = await showDialog<int>(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            backgroundColor: AppConfig.cardColor,
+            shape: RoundedRectangleBorder(borderRadius: AppConfig.borderRadius),
+            title: Text(
+              '収容数を選択してください\nSelect Capacity',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.outfit(
+                color: AppConfig.textPrimary,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [50, 100, 200].map((cap) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppConfig.primaryAccent,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: AppConfig.borderRadius),
+                      ),
+                      onPressed: () => Navigator.of(context).pop(cap),
+                      child: Text(
+                        '$cap',
+                        style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          );
+        },
+      );
+
+      if (capacity == null) return;
+      return triggerPrint(context, chosenCapacity: capacity);
     }
 
     final String machine = _selectedMachine;
@@ -530,7 +656,7 @@ class ReportProvider with ChangeNotifier {
     }
 
     // Default Deep Linking Print Redirect
-    final int capacity = _activeProduct.capacity;
+    final int capacity = chosenCapacity ?? _activeProduct.capacity;
     final String timeStr = DateFormat('HH:mm').format(DateTime.now());
     final String lotDate = DateFormat('yyyy-MM-dd').format(_workDate);
     final String workDateFull = _labelExtension.isNotEmpty 
@@ -543,7 +669,11 @@ class ReportProvider with ChangeNotifier {
     } else if (_sebanggo == 'NC2') {
       filename = 'NC21.lbx';
     } else if (_sebanggo == 'RA01' || _sebanggo == 'RA02') {
-      filename = '311BPlr2.lbx';
+      if (chosenCapacity != null) {
+        filename = '311BPlr3.lbx';
+      } else {
+        filename = '311BPlr2.lbx';
+      }
     }
 
     final String printPayload = 'brotherwebprint://print?' +
@@ -578,66 +708,94 @@ class ReportProvider with ChangeNotifier {
     }
   }
 
-  Future<void> sendToNC(BuildContext context) async {
+  Future<void> sendToNC() async {
     if (_sebanggo.isEmpty) {
       throw Exception('背番号が必要です / Sebanggo is required');
     }
 
     _isSendingToNC = true;
+    _ncSendSuccess = false;
+    _ncSendError = null;
     notifyListeners();
 
-    final machine = _selectedMachine;
-    logTabletAction('Send to machine pressed (Main button)', 'in-progress', {
+    final List<String> machines = _selectedMachine.split(',');
+    logTabletAction('Send to machine pressed (Background/Main)', 'in-progress', {
       'sebanggo': _sebanggo,
-      'source': 'Main Send to Machine button'
+      'source': 'Send to Machine',
+      'machines': machines,
     });
 
-    try {
-      final ipAddress = await _apiService.resolveEquipmentPrinterIP(machine);
-      if (ipAddress.isEmpty) {
-        throw Exception('IP address is empty');
-      }
+    final List<Future<void>> futures = [];
+    final List<String> errors = [];
 
-      final url = 'http://$ipAddress:5000/request?filename=$_sebanggo.pce';
-      print('Sending command to machine: $url');
+    for (final m in machines) {
+      futures.add(() async {
+        final machineName = m.trim();
+        if (machineName.isEmpty) return;
+        try {
+          final ipAddress = await _apiService.resolveEquipmentPrinterIP(machineName);
+          if (ipAddress.isEmpty) {
+            throw Exception('IP address is empty / IPアドレスを取得できませんでした');
+          }
 
-      final uri = Uri.parse(url);
-      
-      final response = await http.get(uri).timeout(const Duration(seconds: 10));
-      logTabletAction('Send to machine success', 'Completed', {
-        'machine': machine,
-        'sebanggo': _sebanggo,
-        'ipAddress': ipAddress,
-        'status': response.statusCode
-      });
-    } catch (e) {
-      print('HTTP request to machine failed: $e. Attempting fallback via url_launcher...');
-      try {
-        final ipAddress = await _apiService.resolveEquipmentPrinterIP(machine);
-        final url = 'http://$ipAddress:5000/request?filename=$_sebanggo.pce';
-        final uri = Uri.parse(url);
-        
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-          logTabletAction('Send to machine success (fallback launch)', 'Completed', {
-            'machine': machine,
+          final url = 'http://$ipAddress:5000/request?filename=$_sebanggo.pce';
+          print('Sending command to machine $machineName: $url');
+
+          final uri = Uri.parse(url);
+          final response = await http.get(uri).timeout(const Duration(seconds: 10));
+          if (response.statusCode != 200) {
+            throw Exception('Server returned status code ${response.statusCode}');
+          }
+          logTabletAction('Send to machine success for $machineName', 'Completed', {
+            'machine': machineName,
             'sebanggo': _sebanggo,
             'ipAddress': ipAddress,
+            'status': response.statusCode
           });
-        } else {
-          throw Exception('Cannot launch URL: $url');
+        } catch (e) {
+          print('HTTP request to machine $machineName failed: $e. Attempting fallback via url_launcher...');
+          try {
+            final ipAddress = await _apiService.resolveEquipmentPrinterIP(machineName);
+            final url = 'http://$ipAddress:5000/request?filename=$_sebanggo.pce';
+            final uri = Uri.parse(url);
+            
+            if (await canLaunchUrl(uri)) {
+              await launchUrl(uri, mode: LaunchMode.externalApplication);
+              logTabletAction('Send to machine success (fallback launch) for $machineName', 'Completed', {
+                'machine': machineName,
+                'sebanggo': _sebanggo,
+                'ipAddress': ipAddress,
+              });
+            } else {
+              throw Exception('Cannot launch URL: $url');
+            }
+          } catch (fallbackErr) {
+            logTabletAction('Send to machine failed for $machineName', 'failed', {
+              'machine': machineName,
+              'sebanggo': _sebanggo,
+              'error': fallbackErr.toString(),
+            });
+            errors.add('$machineName: ${fallbackErr.toString()}');
+          }
         }
-      } catch (fallbackErr) {
-        logTabletAction('Send to machine failed', 'failed', {
-          'machine': machine,
-          'sebanggo': _sebanggo,
-          'error': fallbackErr.toString(),
-        });
-        rethrow;
+      }());
+    }
+
+    try {
+      await Future.wait(futures);
+      if (errors.isNotEmpty) {
+        throw Exception(errors.join('\n'));
       }
+      _setupStep = 0;
+      _ncSendSuccess = true;
+      _ncSendError = null;
+    } catch (e) {
+      _ncSendSuccess = false;
+      _ncSendError = e.toString().replaceFirst('Exception: ', '');
     } finally {
       _isSendingToNC = false;
       notifyListeners();
+      saveDraft();
     }
   }
 
@@ -975,7 +1133,10 @@ class ReportProvider with ChangeNotifier {
       'breaks': _breaks,
       'maintenanceRecords': _maintenanceRecords.map((r) => r.toJson()).toList(),
       'setupStep': _setupStep,
+      'appStage': _appStage.name,
+      'groupedShots': _groupedShots,
     };
+    notifyListeners();
     await _storageService.saveDraft(_selectedFactory, _selectedMachine, draftMap);
   }
 
@@ -1020,6 +1181,27 @@ class ReportProvider with ChangeNotifier {
     var maintList = draft['maintenanceRecords'] as List? ?? [];
     _maintenanceRecords = maintList.map((r) => MaintenanceRecord.fromJson(r as Map<String, dynamic>)).toList();
 
+    final String stageName = draft['appStage'] ?? 'scan';
+    _appStage = AppStage.values.firstWhere(
+      (e) => e.name == stageName,
+      orElse: () => AppStage.scan,
+    );
+
+    final Map<String, dynamic>? groupedMap = draft['groupedShots'] != null 
+        ? Map<String, dynamic>.from(draft['groupedShots']) 
+        : null;
+    if (groupedMap != null) {
+      _groupedShots = groupedMap.map((k, v) => MapEntry(k, v as int));
+    } else {
+      _groupedShots = {};
+      if (_selectedMachine.contains(',')) {
+        final list = _selectedMachine.split(',');
+        for (var m in list) {
+          _groupedShots[m] = 0;
+        }
+      }
+    }
+
     if (_sebanggo.isNotEmpty) {
       _fetchProductInfo();
     }
@@ -1038,6 +1220,7 @@ class ReportProvider with ChangeNotifier {
     _sessionID = '';
     _activeProduct = Product.empty();
     _setupStep = 1;
+    _appStage = AppStage.scan;
     _workerName = '';
     _processQuantity = 0;
     _workDate = DateTime.now();
@@ -1065,6 +1248,14 @@ class ReportProvider with ChangeNotifier {
     _kensaCounters = List.filled(12, 0);
     _spare = 0;
     _commentsKensa = '';
+
+    _groupedShots = {};
+    if (_selectedMachine.contains(',')) {
+      final list = _selectedMachine.split(',');
+      for (var m in list) {
+        _groupedShots[m] = 0;
+      }
+    }
 
     for (var b in _breaks) {
       b['start'] = '';

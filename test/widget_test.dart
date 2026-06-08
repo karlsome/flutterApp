@@ -10,7 +10,7 @@ void main() {
     await tester.pumpWidget(
       ChangeNotifierProvider(
         create: (_) => ReportProvider(),
-        child: const KurachiApp(),
+        child: const KurachiApp(hasSetup: false),
       ),
     );
     // App renders successfully

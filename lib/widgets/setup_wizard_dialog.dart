@@ -138,23 +138,11 @@ class _SetupWizardDialogState extends State<SetupWizardDialog> {
   }
 
   // Step 3: Dispatch command to NC Machine
-  void _sendToNCCommand(ReportProvider p) async {
-    _clearError();
-    setState(() => _isProcessing = true);
-    final ctx = context;
-    try {
-      await p.sendToNC(ctx);
-      p.setSetupStep(0);
-      if (ctx.mounted) {
-        Navigator.of(ctx).pop(); // Dismiss Wizard
-      }
-    } catch (e) {
-      _showError('❌ 送信失敗 / Dispatch failed: $e');
-    } finally {
-      if (mounted) {
-        setState(() => _isProcessing = false);
-      }
+  void _sendToNCCommand(ReportProvider p) {
+    if (mounted) {
+      Navigator.of(context).pop(); // Dismiss Wizard immediately
     }
+    p.sendToNC(); // Run sending asynchronously in the background
   }
 
   @override
@@ -383,42 +371,7 @@ class _SetupWizardDialogState extends State<SetupWizardDialog> {
             shape: RoundedRectangleBorder(borderRadius: AppConfig.borderRadius),
           ),
         ),
-        const SizedBox(height: 16),
-        const Center(
-          child: Text(
-            'または、下記の一覧から手動選択も可能です / Or select manually:',
-            style: TextStyle(fontSize: 12, color: AppConfig.textMuted),
-          ),
-        ),
-        const SizedBox(height: 12),
-        // manual selection list
-        Container(
-          height: 140,
-          decoration: BoxDecoration(
-            border: Border.all(color: AppConfig.borderSecondary),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: p.sebanggoList.isEmpty
-              ? const Center(child: Text('背番号リストがありません / List empty'))
-              : ListView.separated(
-                  itemCount: p.sebanggoList.length,
-                  separatorBuilder: (c, i) => const Divider(height: 1, color: AppConfig.borderSecondary),
-                  itemBuilder: (context, index) {
-                    final item = p.sebanggoList[index];
-                    return ListTile(
-                      dense: true,
-                      title: Text(item, style: const TextStyle(fontWeight: FontWeight.w700, color: AppConfig.textPrimary)),
-                      trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppConfig.textMuted),
-                      onTap: _isProcessing
-                          ? null
-                          : () {
-                              p.setSebanggo(item);
-                              p.setSetupStep(2);
-                            },
-                    );
-                  },
-                ),
-        ),
+
       ],
     );
   }
@@ -521,8 +474,8 @@ class _SetupWizardDialogState extends State<SetupWizardDialog> {
         ),
         const SizedBox(height: 24),
         ElevatedButton.icon(
-          onPressed: _isProcessing ? null : () => _sendToNCCommand(p),
-          icon: _isProcessing
+          onPressed: p.isSendingToNC ? null : () => _sendToNCCommand(p),
+          icon: p.isSendingToNC
               ? const SizedBox(
                   width: 20,
                   height: 20,
@@ -530,7 +483,7 @@ class _SetupWizardDialogState extends State<SetupWizardDialog> {
                 )
               : const Icon(Icons.send_rounded, size: 20, color: Colors.white),
           label: Text(
-            _isProcessing ? '送信中... / Sending...' : 'マシンへ送信 / Send to Machine',
+            p.isSendingToNC ? '送信中... / Sending...' : 'マシンへ送信 / Send to Machine',
             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           style: ElevatedButton.styleFrom(

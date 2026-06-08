@@ -2,9 +2,72 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
 import '../models/product_model.dart';
+import '../models/equipment_model.dart';
 
 class ApiService {
   final http.Client _client = http.Client();
+
+  // Fetch factories list dynamically
+  Future<List<String>> fetchFactories() async {
+    try {
+      final uri = Uri.parse('${AppConfig.serverUrl}/queries');
+      final response = await _client.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'dbName': 'Sasaki_Coating_MasterDB',
+          'collectionName': 'factoryDB',
+          'query': {},
+          'sort': {'工場': 1}
+        }),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        final List<String> list = data
+            .map((item) => item['工場']?.toString() ?? '')
+            .where((item) => item.isNotEmpty)
+            .toList();
+        list.sort((a, b) => a.compareTo(b));
+        return list;
+      } else {
+        throw Exception('Failed to load factories');
+      }
+    } catch (e) {
+      print('Error fetchFactories: $e');
+      return ['小瀬', '波崎', '大宮'];
+    }
+  }
+
+  // Fetch Equipment/Machine models list from setsubiDB
+  Future<List<Equipment>> fetchEquipmentList(String factory) async {
+    try {
+      final uri = Uri.parse('${AppConfig.serverUrl}/queries');
+      final response = await _client.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'dbName': 'Sasaki_Coating_MasterDB',
+          'collectionName': 'setsubiDB',
+          'query': {'工場': factory}
+        }),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        final List<Equipment> list = data
+            .map((item) => Equipment.fromJson(item as Map<String, dynamic>))
+            .toList();
+        list.sort((a, b) => a.name.compareTo(b.name));
+        return list;
+      } else {
+        throw Exception('Failed to load equipment list');
+      }
+    } catch (e) {
+      print('Error fetchEquipmentList: $e');
+      return [];
+    }
+  }
 
   // Fetch Setsubi/Machine names list
   Future<List<String>> fetchSetsubiList(String factory) async {

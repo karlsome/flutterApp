@@ -3,15 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'config/app_config.dart';
 import 'providers/report_provider.dart';
 import 'screens/setup_screen.dart';
+import 'screens/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Disable dynamic web font fetching to optimize for offline/low-performance tablets
-  GoogleFonts.config.allowRuntimeFetching = false;
+  // Enable dynamic web font fetching so GoogleFonts can fetch Outfit font if not bundled
+  GoogleFonts.config.allowRuntimeFetching = true;
 
   // Force portrait orientation on phones; allow both on tablets
   await SystemChrome.setPreferredOrientations([
@@ -29,16 +31,52 @@ void main() async {
     ),
   );
 
+  final prefs = await SharedPreferences.getInstance();
+  final String? factory = prefs.getString('kurachi_selected_factory');
+  final String? machine = prefs.getString('kurachi_selected_machine');
+  final bool hasSetup = factory != null && machine != null && factory.isNotEmpty && machine.isNotEmpty;
+
   runApp(
     ChangeNotifierProvider(
       create: (_) => ReportProvider(),
-      child: const KurachiApp(),
+      child: KurachiApp(
+        hasSetup: hasSetup,
+        initialFactory: factory,
+        initialMachine: machine,
+      ),
     ),
   );
 }
 
-class KurachiApp extends StatelessWidget {
-  const KurachiApp({super.key});
+class KurachiApp extends StatefulWidget {
+  final bool hasSetup;
+  final String? initialFactory;
+  final String? initialMachine;
+
+  const KurachiApp({
+    super.key,
+    required this.hasSetup,
+    this.initialFactory,
+    this.initialMachine,
+  });
+
+  @override
+  State<KurachiApp> createState() => _KurachiAppState();
+}
+
+class _KurachiAppState extends State<KurachiApp> {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.hasSetup) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.read<ReportProvider>().initEnvironment(
+              widget.initialFactory!,
+              widget.initialMachine!,
+            );
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +142,7 @@ class KurachiApp extends StatelessWidget {
           behavior: SnackBarBehavior.floating,
         ),
       ),
-      home: const SetupScreen(),
+      home: widget.hasSetup ? const HomeScreen() : const SetupScreen(),
     );
   }
 }
