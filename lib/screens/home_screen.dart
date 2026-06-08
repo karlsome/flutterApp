@@ -39,12 +39,45 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   String _scanError = '';
   bool _isScanProcessing = false;
+  late final PageController _pageController;
+
+  int _stageToPageIndex(AppStage stage) {
+    switch (stage) {
+      case AppStage.scan:
+        return 0;
+      case AppStage.production:
+        return 1;
+      case AppStage.quality:
+        return 2;
+      case AppStage.submit:
+        return 3;
+      default:
+        return 0;
+    }
+  }
+
+  AppStage _pageIndexToStage(int index) {
+    switch (index) {
+      case 0:
+        return AppStage.scan;
+      case 1:
+        return AppStage.production;
+      case 2:
+        return AppStage.quality;
+      case 3:
+        return AppStage.submit;
+      default:
+        return AppStage.scan;
+    }
+  }
 
   @override
   void initState() {
     super.initState();
+    final provider = Provider.of<ReportProvider>(context, listen: false);
+    _pageController = PageController(initialPage: _stageToPageIndex(provider.appStage));
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = Provider.of<ReportProvider>(context, listen: false);
       provider.addListener(_onProviderChange);
       
       // Initialize controller text values
@@ -61,6 +94,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     try {
       Provider.of<ReportProvider>(context, listen: false).removeListener(_onProviderChange);
     } catch (_) {}
+    _pageController.dispose();
     _processQtyController.dispose();
     _shotController.dispose();
     _dcpCommentController.dispose();
@@ -79,6 +113,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (!mounted) return;
     final provider = Provider.of<ReportProvider>(context, listen: false);
     
+    // Sync PageView index with provider.appStage
+    if (_pageController.hasClients) {
+      final targetPageIndex = _stageToPageIndex(provider.appStage);
+      final currentPage = _pageController.page?.round();
+      if (currentPage != targetPageIndex) {
+        _pageController.animateToPage(
+          targetPageIndex,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+    }
+
     if (!_processQtyFocus.hasFocus) {
       final qtyStr = provider.processQuantity > 0 ? provider.processQuantity.toString() : '';
       if (_processQtyController.text != qtyStr) {
@@ -418,9 +465,39 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
             // Active Stage Body
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-                child: _buildStageBody(provider),
+              child: PageView(
+                controller: _pageController,
+                physics: provider.isSetupComplete
+                    ? const BouncingScrollPhysics()
+                    : const NeverScrollableScrollPhysics(),
+                onPageChanged: (index) {
+                  final targetStage = _pageIndexToStage(index);
+                  if (provider.appStage != targetStage) {
+                    provider.setAppStage(targetStage);
+                  }
+                },
+                children: [
+                  SingleChildScrollView(
+                    key: const ValueKey('scan_stage'),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+                    child: _buildScanStage(provider),
+                  ),
+                  SingleChildScrollView(
+                    key: const ValueKey('production_stage'),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+                    child: _buildProductionStage(provider),
+                  ),
+                  SingleChildScrollView(
+                    key: const ValueKey('quality_stage'),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+                    child: _buildQualityStage(provider),
+                  ),
+                  SingleChildScrollView(
+                    key: const ValueKey('submit_stage'),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+                    child: _buildSubmitStage(provider),
+                  ),
+                ],
               ),
             ),
           ],
@@ -429,21 +506,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: activeStage == AppStage.submit ? _buildSubmitFloatingBar(context) : null,
     );
-  }
-
-  Widget _buildStageBody(ReportProvider provider) {
-    switch (provider.appStage) {
-      case AppStage.scan:
-        return _buildScanStage(provider);
-      case AppStage.production:
-        return _buildProductionStage(provider);
-      case AppStage.quality:
-        return _buildQualityStage(provider);
-      case AppStage.submit:
-        return _buildSubmitStage(provider);
-      default:
-        return _buildScanStage(provider);
-    }
   }
 
   // ────────────────────────────────────────────────────────────────────────────
