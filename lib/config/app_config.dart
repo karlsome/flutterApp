@@ -36,6 +36,14 @@ class AppConfig {
       ? const Color(0xFF2C2C2C) // Dark Border
       : const Color(0xFFE2E8F0); // Slate 200
 
+  static Color get inputFillColor => isDark 
+      ? const Color(0xFF121212) // Dark Mode input field fill
+      : const Color(0xFFF1F5F9); // Light Mode input field fill (Slate 100)
+
+  static Color get inputBorderColor => isDark 
+      ? const Color(0xFF475569) // Dark Mode input border (Slate 600)
+      : const Color(0xFFCBD5E1); // Light Mode input border (Slate 300)
+
   static Color get primaryAccent => isDark 
       ? const Color(0xFFFFD166) // Neon Safety Yellow
       : const Color(0xFF1D3557); // Vivid Blue / Navy

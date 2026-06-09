@@ -149,12 +149,12 @@ class _WorkerSelectSheetState extends State<WorkerSelectSheet> {
               style: TextStyle(color: AppConfig.textPrimary),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: AppConfig.cardColor,
+                fillColor: AppConfig.inputFillColor,
                 hintText: '名前を入力 / Enter Name',
                 hintStyle: TextStyle(color: AppConfig.textMuted),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: AppConfig.borderRadius,
-                  borderSide: BorderSide(color: AppConfig.borderSecondary),
+                  borderSide: BorderSide(color: AppConfig.inputBorderColor),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: AppConfig.borderRadius,
@@ -204,12 +204,12 @@ class _WorkerSelectSheetState extends State<WorkerSelectSheet> {
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.search, color: AppConfig.textMuted),
                 filled: true,
-                fillColor: AppConfig.cardColor,
+                fillColor: AppConfig.inputFillColor,
                 hintText: '検索 / Search...',
                 hintStyle: TextStyle(color: AppConfig.textMuted),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: AppConfig.borderRadius,
-                  borderSide: BorderSide(color: AppConfig.borderSecondary),
+                  borderSide: BorderSide(color: AppConfig.inputBorderColor),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: AppConfig.borderRadius,

@@ -162,14 +162,14 @@ class _MaintenanceDialogState extends State<MaintenanceDialog> {
                 labelText: 'コメント / Comment',
                 alignLabelWithHint: true,
                 filled: true,
-                fillColor: AppConfig.backgroundColor,
+                fillColor: AppConfig.inputFillColor,
                 border: OutlineInputBorder(
                   borderRadius: AppConfig.borderRadius,
-                  borderSide: BorderSide(color: AppConfig.borderSecondary),
+                  borderSide: BorderSide(color: AppConfig.inputBorderColor),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: AppConfig.borderRadius,
-                  borderSide: BorderSide(color: AppConfig.borderSecondary),
+                  borderSide: BorderSide(color: AppConfig.inputBorderColor),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: AppConfig.borderRadius,

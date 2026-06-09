@@ -116,15 +116,15 @@ class _KurachiAppState extends State<KurachiApp> {
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: AppConfig.cardColor,
+          fillColor: AppConfig.inputFillColor,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           border: OutlineInputBorder(
             borderRadius: AppConfig.borderRadius,
-            borderSide: BorderSide(color: AppConfig.borderSecondary),
+            borderSide: BorderSide(color: AppConfig.inputBorderColor),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: AppConfig.borderRadius,
-            borderSide: BorderSide(color: AppConfig.borderSecondary),
+            borderSide: BorderSide(color: AppConfig.inputBorderColor),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: AppConfig.borderRadius,

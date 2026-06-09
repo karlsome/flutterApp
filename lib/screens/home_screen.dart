@@ -1413,9 +1413,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppConfig.backgroundColor,
+        color: AppConfig.inputFillColor,
         borderRadius: AppConfig.borderRadius,
-        border: Border.all(color: AppConfig.borderSecondary),
+        border: Border.all(color: AppConfig.inputBorderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1453,9 +1453,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           margin: const EdgeInsets.only(bottom: 6),
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: AppConfig.backgroundColor,
+            color: AppConfig.inputFillColor,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppConfig.borderSecondary),
+            border: Border.all(color: AppConfig.inputBorderColor),
           ),
           child: Row(
             children: [
@@ -1494,9 +1494,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppConfig.backgroundColor,
+        color: AppConfig.inputFillColor,
         borderRadius: AppConfig.borderRadius,
-        border: Border.all(color: AppConfig.borderSecondary),
+        border: Border.all(color: AppConfig.inputBorderColor),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -2149,9 +2149,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
       decoration: BoxDecoration(
-        color: AppConfig.backgroundColor,
+        color: AppConfig.inputFillColor,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppConfig.borderSecondary),
+        border: Border.all(color: AppConfig.inputBorderColor),
       ),
       child: Column(
         children: [
