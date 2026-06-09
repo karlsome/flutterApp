@@ -69,7 +69,7 @@ class CounterBox extends StatelessWidget {
             ),
           ),
           if (subLabel != null) ...[
-            const SizedBox(height: 2),
+            SizedBox(height: 2),
             Text(
               subLabel!,
               textAlign: TextAlign.center,
@@ -79,7 +79,7 @@ class CounterBox extends StatelessWidget {
               ),
             ),
           ],
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -94,7 +94,7 @@ class CounterBox extends StatelessWidget {
                   fontSize: 28,
                   fontWeight: FontWeight.w800,
                   color: hasValue ? activeColor : AppConfig.textMuted,
-                  fontFeatures: const [FontFeature.tabularFigures()],
+                  fontFeatures: [FontFeature.tabularFigures()],
                 ),
               ),
               _CountBtn(
@@ -157,7 +157,7 @@ class _CompactCounter extends StatelessWidget {
               subLabel!,
               style: GoogleFonts.outfit(fontSize: 10, color: AppConfig.textMuted),
             ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             value.toString(),
             style: GoogleFonts.outfit(
@@ -177,7 +177,7 @@ class _CompactCounter extends StatelessWidget {
                   color: (enabled && value > 0) ? activeColor : AppConfig.textMuted,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               GestureDetector(
                 onTap: enabled ? onIncrement : null,
                 child: Icon(

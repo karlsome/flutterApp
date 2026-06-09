@@ -88,7 +88,7 @@ class _WorkerSelectSheetState extends State<WorkerSelectSheet> {
   Widget build(BuildContext context) {
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppConfig.backgroundColor,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20),
@@ -110,7 +110,7 @@ class _WorkerSelectSheetState extends State<WorkerSelectSheet> {
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -136,33 +136,33 @@ class _WorkerSelectSheetState extends State<WorkerSelectSheet> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           if (_isManualMode) ...[
             Text(
               '作業者名を手動で入力してください:',
               style: TextStyle(color: AppConfig.textSecondary, fontSize: 14),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             TextField(
               controller: _manualController,
               autofocus: true,
-              style: const TextStyle(color: AppConfig.textPrimary),
+              style: TextStyle(color: AppConfig.textPrimary),
               decoration: InputDecoration(
                 filled: true,
                 fillColor: AppConfig.cardColor,
                 hintText: '名前を入力 / Enter Name',
-                hintStyle: const TextStyle(color: AppConfig.textMuted),
+                hintStyle: TextStyle(color: AppConfig.textMuted),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: AppConfig.borderRadius,
-                  borderSide: const BorderSide(color: AppConfig.borderSecondary),
+                  borderSide: BorderSide(color: AppConfig.borderSecondary),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: AppConfig.borderRadius,
-                  borderSide: const BorderSide(color: AppConfig.primaryAccent, width: 2),
+                  borderSide: BorderSide(color: AppConfig.primaryAccent, width: 2),
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
@@ -170,13 +170,13 @@ class _WorkerSelectSheetState extends State<WorkerSelectSheet> {
                     onPressed: () => setState(() => _isManualMode = false),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      side: const BorderSide(color: AppConfig.borderSecondary),
+                      side: BorderSide(color: AppConfig.borderSecondary),
                       shape: RoundedRectangleBorder(borderRadius: AppConfig.borderRadius),
                     ),
-                    child: const Text('戻る / Back', style: TextStyle(color: AppConfig.textSecondary)),
+                    child: Text('戻る / Back', style: TextStyle(color: AppConfig.textSecondary)),
                   ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
@@ -191,7 +191,7 @@ class _WorkerSelectSheetState extends State<WorkerSelectSheet> {
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(borderRadius: AppConfig.borderRadius),
                     ),
-                    child: const Text('確定 / Confirm', style: TextStyle(color: AppConfig.onAccent, fontWeight: FontWeight.bold)),
+                    child: Text('確定 / Confirm', style: TextStyle(color: AppConfig.onAccent, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
@@ -200,24 +200,24 @@ class _WorkerSelectSheetState extends State<WorkerSelectSheet> {
             // Search Bar
             TextField(
               controller: _searchController,
-              style: const TextStyle(color: AppConfig.textPrimary),
+              style: TextStyle(color: AppConfig.textPrimary),
               decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.search, color: AppConfig.textMuted),
+                prefixIcon: Icon(Icons.search, color: AppConfig.textMuted),
                 filled: true,
                 fillColor: AppConfig.cardColor,
                 hintText: '検索 / Search...',
-                hintStyle: const TextStyle(color: AppConfig.textMuted),
+                hintStyle: TextStyle(color: AppConfig.textMuted),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: AppConfig.borderRadius,
-                  borderSide: const BorderSide(color: AppConfig.borderSecondary),
+                  borderSide: BorderSide(color: AppConfig.borderSecondary),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: AppConfig.borderRadius,
-                  borderSide: const BorderSide(color: AppConfig.primaryAccent),
+                  borderSide: BorderSide(color: AppConfig.primaryAccent),
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             
             // Recents Block
             if (_recentWorkers.isNotEmpty) ...[
@@ -225,7 +225,7 @@ class _WorkerSelectSheetState extends State<WorkerSelectSheet> {
                 '最近使用した作業者 / Recent Selection',
                 style: TextStyle(fontSize: 14, color: AppConfig.warningColor, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
               SizedBox(
                 height: 50,
                 child: ListView.builder(
@@ -237,7 +237,7 @@ class _WorkerSelectSheetState extends State<WorkerSelectSheet> {
                       margin: const EdgeInsets.only(right: 10),
                       child: InputChip(
                         label: Text(name),
-                        labelStyle: const TextStyle(color: AppConfig.textPrimary, fontWeight: FontWeight.bold),
+                        labelStyle: TextStyle(color: AppConfig.textPrimary, fontWeight: FontWeight.bold),
                         backgroundColor: AppConfig.cardColor,
                         shadowColor: Colors.black26,
                         elevation: 2,
@@ -247,20 +247,20 @@ class _WorkerSelectSheetState extends State<WorkerSelectSheet> {
                           Navigator.pop(context);
                         },
                         onDeleted: () => _deleteRecent(name),
-                        deleteIcon: const Icon(Icons.close, size: 16, color: AppConfig.ngColor),
+                        deleteIcon: Icon(Icons.close, size: 16, color: AppConfig.ngColor),
                       ),
                     );
                   },
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
             ],
 
             Text(
               'すべての作業者 / All Workers',
               style: TextStyle(fontSize: 14, color: AppConfig.textSecondary, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             Expanded(
               child: _filteredWorkers.isEmpty
                   ? Center(child: Text('見つかりません / No workers found', style: TextStyle(color: AppConfig.textMuted)))
@@ -290,7 +290,7 @@ class _WorkerSelectSheetState extends State<WorkerSelectSheet> {
                             child: Text(
                               name,
                               textAlign: TextAlign.center,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppConfig.textPrimary,
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,

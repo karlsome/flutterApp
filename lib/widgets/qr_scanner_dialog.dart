@@ -79,7 +79,7 @@ class _QrScannerDialogState extends State<QrScannerDialog> {
             // Header
             Container(
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppConfig.cardColor,
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(20),
@@ -88,13 +88,13 @@ class _QrScannerDialogState extends State<QrScannerDialog> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.qr_code_scanner_rounded,
+                  Icon(Icons.qr_code_scanner_rounded,
                       color: AppConfig.primaryAccent, size: 26),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       widget.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppConfig.textPrimary,
                         fontSize: 17,
                         fontWeight: FontWeight.bold,
@@ -162,7 +162,7 @@ class _QrScannerDialogState extends State<QrScannerDialog> {
                       child: Text(
                         widget.instruction,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: AppConfig.onAccent, fontSize: 13),
                       ),
                     ),
@@ -188,7 +188,7 @@ class _QrScannerDialogState extends State<QrScannerDialog> {
                     shape: RoundedRectangleBorder(
                         borderRadius: AppConfig.borderRadius),
                   ),
-                  child: const Text(
+                  child: Text(
                     'キャンセル / Cancel',
                     style: TextStyle(
                         color: AppConfig.onAccent,

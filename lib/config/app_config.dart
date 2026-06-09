@@ -20,21 +20,53 @@ class AppConfig {
   static const String defaultFactory = '小瀬';
   static const String defaultMachine = 'OZNC01';
 
-  // Premium Color Palette - Light Mode
-  static const Color backgroundColor = Color(0xFFF8FAFC); // Off-white Slate 50
-  static const Color cardColor = Color(0xFFFFFFFF); // White
-  static const Color borderSecondary = Color(0xFFE2E8F0); // Slate 200
-  
-  static const Color primaryAccent = Color(0xFF4F46E5); // Indigo 600
-  static const Color primaryHover = Color(0xFF4338CA); // Indigo 700
-  
-  static const Color okColor = Color(0xFF059669); // Emerald 600
-  static const Color ngColor = Color(0xFFDC2626); // Red 600
-  static const Color warningColor = Color(0xFFD97706); // Amber 600
-  
-  static const Color textPrimary = Color(0xFF0F172A); // Slate 900
-  static const Color textSecondary = Color(0xFF475569); // Slate 600
-  static const Color textMuted = Color(0xFF94A3B8); // Slate 400
+  // Dynamic Theme Flag
+  static bool isDark = false;
+
+  // Premium Color Palette - Light & Dark Modes
+  static Color get backgroundColor => isDark 
+      ? const Color(0xFF121212) // Deep Charcoal / Jet Black
+      : const Color(0xFFF7F9FC); // Cool Off-white
+
+  static Color get cardColor => isDark 
+      ? const Color(0xFF1E1E1E) // Slate Gray Card
+      : const Color(0xFFFFFFFF); // White
+
+  static Color get borderSecondary => isDark 
+      ? const Color(0xFF2C2C2C) // Dark Border
+      : const Color(0xFFE2E8F0); // Slate 200
+
+  static Color get primaryAccent => isDark 
+      ? const Color(0xFFFFD166) // Neon Safety Yellow
+      : const Color(0xFF1D3557); // Vivid Blue / Navy
+
+  static Color get primaryHover => isDark 
+      ? const Color(0xFFE5BC5C) 
+      : const Color(0xFF152943);
+
+  static Color get okColor => isDark 
+      ? const Color(0xFF059669) // Emerald 600
+      : const Color(0xFF00A896); // Electric Cyan
+
+  static Color get ngColor => isDark 
+      ? const Color(0xFFDC2626) // Red 600
+      : const Color(0xFFDC2626); // Red 600 (kept same for consistency)
+
+  static Color get warningColor => isDark 
+      ? const Color(0xFFF4A261) // Industrial Orange
+      : const Color(0xFFD97706); // Amber 600
+
+  static Color get textPrimary => isDark 
+      ? const Color(0xFFF8FAFC) // Slate 50
+      : const Color(0xFF0F172A); // Slate 900
+
+  static Color get textSecondary => isDark 
+      ? const Color(0xFF94A3B8) // Slate 400
+      : const Color(0xFF475569); // Slate 600
+
+  static Color get textMuted => isDark 
+      ? const Color(0xFF475569) // Slate 600
+      : const Color(0xFF94A3B8); // Slate 400
 
   // ── Border radius scale ──────────────────────────────────────────────────────
   static final BorderRadius radiusSm   = BorderRadius.circular(8);   // chips, badges, small containers
@@ -59,25 +91,48 @@ class AppConfig {
   static const double inputHeight  = 56; // standard text field height
 
   // ── Semantic color aliases (replaces hardcoded Colors.white / Colors.black) ──
-  static const Color onAccent    = Color(0xFFFFFFFF); // text/icons on colored backgrounds
-  static const Color overlayDark = Color(0xFF000000); // base for dark overlays
+  static Color get onAccent => isDark 
+      ? const Color(0xFF121212) // Dark text on Safety Yellow buttons
+      : const Color(0xFFFFFFFF); // White text on Vivid Blue buttons
+
+  static Color get overlayDark => isDark 
+      ? const Color(0xFF000000) 
+      : const Color(0xFF000000);
 
   // Modern Linear Gradient
-  static const LinearGradient primaryGradient = LinearGradient(
-    colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)], // Indigo to Violet
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
+  static LinearGradient get primaryGradient => isDark
+      ? LinearGradient(
+          colors: [Color(0xFFFFD166), Color(0xFFF4A261)], // Yellow to Orange
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        )
+      : LinearGradient(
+          colors: [Color(0xFF1D3557), Color(0xFF457B9D)], // Vivid Blue to Steel Blue
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
 
-  static const LinearGradient okGradient = LinearGradient(
-    colors: [Color(0xFF059669), Color(0xFF10B981)], // Emerald to Green
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
+  static LinearGradient get okGradient => isDark
+      ? LinearGradient(
+          colors: [Color(0xFF059669), Color(0xFF10B981)], // Emerald to Green
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        )
+      : LinearGradient(
+          colors: [Color(0xFF00A896), Color(0xFF02C2AD)], // Electric Cyan to Mint
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
 
-  static const LinearGradient ngGradient = LinearGradient(
-    colors: [Color(0xFFDC2626), Color(0xFFEF4444)], // Red to Light Red
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
+  static LinearGradient get ngGradient => isDark
+      ? LinearGradient(
+          colors: [Color(0xFFDC2626), Color(0xFFEF4444)], // Red to Light Red
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        )
+      : LinearGradient(
+          colors: [Color(0xFFDC2626), Color(0xFFEF4444)], // Red to Light Red
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
 }

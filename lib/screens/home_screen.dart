@@ -9,6 +9,7 @@ import 'dart:ui';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_config.dart';
 import '../providers/report_provider.dart';
+import '../providers/theme_provider.dart';
 import '../widgets/product_details_sheet.dart';
 import '../widgets/qr_scanner_dialog.dart';
 import '../widgets/worker_select_sheet.dart';
@@ -189,7 +190,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           backgroundColor: AppConfig.cardColor,
           shape: RoundedRectangleBorder(borderRadius: AppConfig.borderRadius),
           title: Row(
-            children: const [
+            children: [
               Icon(Icons.error_outline_rounded, color: AppConfig.ngColor, size: 24),
               SizedBox(width: 8),
               Text(
@@ -200,12 +201,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
           content: Text(
             'マシンへのデータ送信に失敗しました。\n\n詳細: $error\n\n再度「マシンへ送信」を実行してください。',
-            style: const TextStyle(color: AppConfig.textSecondary, fontSize: 14, height: 1.5),
+            style: TextStyle(color: AppConfig.textSecondary, fontSize: 14, height: 1.5),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK', style: TextStyle(color: AppConfig.primaryAccent, fontWeight: FontWeight.bold)),
+              child: Text('OK', style: TextStyle(color: AppConfig.primaryAccent, fontWeight: FontWeight.bold)),
             ),
           ],
         );
@@ -358,7 +359,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         automaticallyImplyLeading: false,
         backgroundColor: AppConfig.cardColor,
         elevation: 0,
-        shape: const Border(bottom: BorderSide(color: AppConfig.borderSecondary)),
+        shape: Border(bottom: BorderSide(color: AppConfig.borderSecondary)),
         title: Row(
           children: [
             Container(
@@ -377,7 +378,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ),
             if (provider.logQueue.isNotEmpty) ...[
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
@@ -418,17 +419,30 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               provider.activeProduct.imageUrl,
                               fit: BoxFit.cover,
                               cacheWidth: 100,
-                              errorBuilder: (_, __, ___) => const Icon(Icons.info_outline, size: 20, color: AppConfig.primaryAccent),
+                              errorBuilder: (_, __, ___) => Icon(Icons.info_outline, size: 20, color: AppConfig.primaryAccent),
                             )
-                          : const Icon(Icons.info_outline, size: 20, color: AppConfig.primaryAccent),
+                          : Icon(Icons.info_outline, size: 20, color: AppConfig.primaryAccent),
                     ),
                   ),
                 );
               },
             ),
+          // Theme Toggle Button
+          IconButton(
+            icon: Icon(
+              context.watch<ThemeProvider>().isDark
+                  ? Icons.light_mode_rounded
+                  : Icons.dark_mode_rounded,
+              color: AppConfig.textSecondary,
+            ),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              context.read<ThemeProvider>().toggleTheme();
+            },
+          ),
           // Settings Reset Popup
           PopupMenuButton<String>(
-            icon: const Icon(Icons.settings_rounded, color: AppConfig.textSecondary),
+            icon: Icon(Icons.settings_rounded, color: AppConfig.textSecondary),
             onSelected: (val) {
               if (val == 'reset') {
                 _resetMachineSetting();
@@ -439,8 +453,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 value: 'reset',
                 child: Row(
                   children: [
-                    const Icon(Icons.refresh_rounded, color: AppConfig.ngColor, size: 20),
-                    const SizedBox(width: 8),
+                    Icon(Icons.refresh_rounded, color: AppConfig.ngColor, size: 20),
+                    SizedBox(width: 8),
                     Text('環境再設定 / Reset Machine', style: GoogleFonts.outfit(color: AppConfig.ngColor, fontWeight: FontWeight.bold)),
                   ],
                 ),
@@ -471,12 +485,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                         child: Row(
                           children: [
-                            const SizedBox(
+                            SizedBox(
                               width: 14,
                               height: 14,
                               child: CircularProgressIndicator(strokeWidth: 2, color: AppConfig.warningColor),
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: 12),
                             Expanded(
                               child: Text(
                                 '切断データをマシンへ送信中... / Sending details to machine in background...',
@@ -589,7 +603,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Container(
       decoration: BoxDecoration(
         color: AppConfig.cardColor,
-        border: const Border(top: BorderSide(color: AppConfig.borderSecondary)),
+        border: Border(top: BorderSide(color: AppConfig.borderSecondary)),
       ),
       child: SafeArea(
         top: false,
@@ -638,7 +652,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 : (isActive ? AppConfig.primaryAccent : AppConfig.textMuted),
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4),
                         Text(
                           s.label,
                           style: GoogleFonts.outfit(
@@ -688,7 +702,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(current.icon, size: 16, color: AppConfig.primaryAccent),
-            const SizedBox(width: 6),
+            SizedBox(width: 6),
             Text(
               current.label,
               style: GoogleFonts.outfit(
@@ -697,8 +711,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 color: AppConfig.primaryAccent,
               ),
             ),
-            const SizedBox(width: 6),
-            const Icon(Icons.keyboard_arrow_up_rounded, size: 16, color: AppConfig.primaryAccent),
+            SizedBox(width: 6),
+            Icon(Icons.keyboard_arrow_up_rounded, size: 16, color: AppConfig.primaryAccent),
           ],
         ),
       ),
@@ -727,15 +741,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 color: AppConfig.okColor.withOpacity(0.12),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.check_circle_outline_rounded, color: AppConfig.okColor, size: 56),
+              child: Icon(Icons.check_circle_outline_rounded, color: AppConfig.okColor, size: 56),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             Text(
               '段取りスキャン検証完了\nSetup Validation Complete',
               textAlign: TextAlign.center,
               style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: AppConfig.textPrimary),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -745,16 +759,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               child: Column(
                 children: [
                   _infoRow('背番号 / Sebanggo', p.sebanggo),
-                  const Divider(color: AppConfig.borderSecondary),
+                  Divider(color: AppConfig.borderSecondary),
                   _infoRow('品番 / Part Number', p.activeProduct.productNumber),
-                  const Divider(color: AppConfig.borderSecondary),
+                  Divider(color: AppConfig.borderSecondary),
                   _infoRow('材料コード / Material Code', p.activeProduct.materialCode),
-                  const Divider(color: AppConfig.borderSecondary),
+                  Divider(color: AppConfig.borderSecondary),
                   _infoRow('ロット番号 / Lot Numbers', p.materialLots.join(', ')),
                 ],
               ),
             ),
-            const SizedBox(height: 32),
+            SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
               height: 52,
@@ -764,11 +778,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   p.resetSetupWorkflow();
                 },
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppConfig.ngColor),
+                  side: BorderSide(color: AppConfig.ngColor),
                   foregroundColor: AppConfig.ngColor,
                   shape: RoundedRectangleBorder(borderRadius: AppConfig.borderRadius),
                 ),
-                icon: const Icon(Icons.refresh_rounded),
+                icon: Icon(Icons.refresh_rounded),
                 label: Text('段取りをやり直す / Reset & Rescan', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
               ),
             ),
@@ -797,7 +811,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
 
         // Stepper Core Content Card
         Container(
@@ -816,38 +830,38 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   textAlign: TextAlign.center,
                   style: GoogleFonts.outfit(fontSize: 14, color: AppConfig.textSecondary, height: 1.5),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24),
                 ElevatedButton.icon(
                   onPressed: _isScanProcessing ? null : () => _startStep1Scan(p),
-                  icon: const Icon(Icons.qr_code_scanner_rounded, size: 22, color: AppConfig.onAccent),
+                  icon: Icon(Icons.qr_code_scanner_rounded, size: 22, color: AppConfig.onAccent),
                   label: Text('背番号スキャン / Scan Kanban', style: GoogleFonts.outfit(color: AppConfig.onAccent, fontWeight: FontWeight.bold)),
                 ),
               ],
               if (p.setupStep == 2) ...[
                 Row(
                   children: [
-                    const Icon(Icons.info_outline_rounded, color: AppConfig.warningColor, size: 20),
-                    const SizedBox(width: 8),
+                    Icon(Icons.info_outline_rounded, color: AppConfig.warningColor, size: 20),
+                    SizedBox(width: 8),
                     Text(
                       '材料照合 / Material Validation',
                       style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.bold, color: AppConfig.textPrimary),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 Text(
                   '背番号: ${p.sebanggo}',
                   style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppConfig.primaryAccent),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6),
                 Text(
                   '指定材料コード / Expected Material Code:\n${p.activeProduct.materialCode.replaceAll(',', ' or ')}',
                   style: GoogleFonts.outfit(fontSize: 14, color: AppConfig.textSecondary, height: 1.5, fontWeight: FontWeight.w600),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24),
                 ElevatedButton.icon(
                   onPressed: () => _startStep2Scan(p),
-                  icon: const Icon(Icons.qr_code_scanner_rounded, size: 22, color: AppConfig.onAccent),
+                  icon: Icon(Icons.qr_code_scanner_rounded, size: 22, color: AppConfig.onAccent),
                   label: Text('材料ラベルをスキャン / Scan Material', style: GoogleFonts.outfit(color: AppConfig.onAccent, fontWeight: FontWeight.bold)),
                 ),
               ],
@@ -855,52 +869,52 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 if (isOzmanas) ...[
                   Row(
                     children: [
-                      const Icon(Icons.grid_view_rounded, color: AppConfig.primaryAccent, size: 20),
-                      const SizedBox(width: 8),
+                      Icon(Icons.grid_view_rounded, color: AppConfig.primaryAccent, size: 20),
+                      SizedBox(width: 8),
                       Text(
                         'トムソンボード検証 / Thomson Board validation',
                         style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.bold, color: AppConfig.textPrimary),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   Text(
                     '指定型番 / Expected Board Code:\n${p.activeProduct.kataban}',
                     style: GoogleFonts.outfit(fontSize: 14, color: AppConfig.textSecondary, height: 1.5, fontWeight: FontWeight.w600),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
                   ElevatedButton.icon(
                     onPressed: () => _startStep3BoardScan(p),
-                    icon: const Icon(Icons.qr_code_scanner_rounded, size: 22, color: AppConfig.onAccent),
+                    icon: Icon(Icons.qr_code_scanner_rounded, size: 22, color: AppConfig.onAccent),
                     label: Text('型番QRをスキャン / Scan Thomson Board', style: GoogleFonts.outfit(color: AppConfig.onAccent, fontWeight: FontWeight.bold)),
                   ),
                 ] else ...[
                   Row(
                     children: [
-                      const Icon(Icons.sensors_rounded, color: AppConfig.okColor, size: 20),
-                      const SizedBox(width: 8),
+                      Icon(Icons.sensors_rounded, color: AppConfig.okColor, size: 20),
+                      SizedBox(width: 8),
                       Text(
                         'マシン送信 / Send Details to Machine',
                         style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.bold, color: AppConfig.textPrimary),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   Text(
                     '背番号「${p.sebanggo}」の切断プログラムデータをマシンへ送信します。\n'
                     'Ready to dispatch program to machine.',
                     style: GoogleFonts.outfit(fontSize: 13, color: AppConfig.textSecondary, height: 1.5),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
                   ElevatedButton.icon(
                     onPressed: p.isSendingToNC ? null : () => _sendToNCCommand(p),
                     icon: p.isSendingToNC
-                        ? const SizedBox(
+                        ? SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(color: AppConfig.onAccent, strokeWidth: 2),
                           )
-                        : const Icon(Icons.send_rounded, size: 20, color: AppConfig.onAccent),
+                        : Icon(Icons.send_rounded, size: 20, color: AppConfig.onAccent),
                     label: Text(
                       p.isSendingToNC ? '送信中... / Sending...' : 'マシンへ送信 / Send to Machine',
                       style: GoogleFonts.outfit(color: AppConfig.onAccent, fontWeight: FontWeight.bold),
@@ -914,7 +928,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
 
         if (_scanError.isNotEmpty) ...[
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -924,8 +938,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
             child: Row(
               children: [
-                const Icon(Icons.error_outline_rounded, color: AppConfig.ngColor, size: 20),
-                const SizedBox(width: 10),
+                Icon(Icons.error_outline_rounded, color: AppConfig.ngColor, size: 20),
+                SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     _scanError,
@@ -939,7 +953,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
         // Reset option
         if (p.setupStep > 1) ...[
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
             height: 52,
@@ -950,7 +964,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 setState(() => _scanError = '');
               },
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: AppConfig.borderSecondary),
+                side: BorderSide(color: AppConfig.borderSecondary),
                 shape: RoundedRectangleBorder(borderRadius: AppConfig.borderRadius),
               ),
               child: Text(
@@ -977,7 +991,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ? AppConfig.okColor
                 : (isActive ? AppConfig.primaryAccent : AppConfig.borderSecondary),
             child: isDone
-                ? const Icon(Icons.check, color: AppConfig.onAccent, size: 18)
+                ? Icon(Icons.check, color: AppConfig.onAccent, size: 18)
                 : Text(
                     '$step',
                     style: GoogleFonts.outfit(
@@ -986,7 +1000,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                   ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6),
           Text(
             label,
             textAlign: TextAlign.center,
@@ -1140,18 +1154,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       children: [
         // Product Thumbnail & Sebanggo/Hinban Header Card
         _buildProductThumbnailHeader(p),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
 
         // 1. Process Core Inputs
         _buildProductionHeaderCard(p),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
 
         // 2. Large Touch-based defect counters
         Text(
           '不良カウンター (タップでカウントアップ) / Defect Counters (Tap to increment)',
           style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w600, color: AppConfig.textSecondary),
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         Row(
           children: [
             Expanded(
@@ -1164,7 +1178,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 onDecrement: () => p.decrementDcpCounter(18),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Expanded(
               child: TouchCounterCard(
                 label: '加工不良',
@@ -1175,7 +1189,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 onDecrement: () => p.decrementDcpCounter(19),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Expanded(
               child: TouchCounterCard(
                 label: 'その他',
@@ -1188,12 +1202,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ],
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: 20),
 
         // 3. Optional Kensa inspections (only if single machine)
         if (!p.isGroupedMachine) ...[
           _buildKensaSectionWidget(p),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
         ],
 
         // 4. Breaks
@@ -1202,7 +1216,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           icon: Icons.coffee_rounded,
           child: const BreakTimeSection(),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
 
         // 5. Maintenance
         _buildSectionTitleCard(
@@ -1227,11 +1241,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Row(
             children: [
               Expanded(child: _buildWorkerSelectBox(context, p, false)),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(child: _buildDateSelectBox(context, p)),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -1242,7 +1256,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   onTap: () => _pickTime(context, (t) async => p.setStartTime(t)),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: _buildTimeSelectBox(
                   context,
@@ -1253,7 +1267,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -1264,7 +1278,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   onChanged: (v) => p.setProcessQuantity(int.tryParse(v) ?? 0),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               if (p.isGroupedMachine)
                 Expanded(child: _buildGroupedMachineShots(p))
               else
@@ -1278,7 +1292,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           _buildNumberInputBox(
             label: 'ラベル拡張 / Label Ext.',
             controller: _labelExtController,
@@ -1286,10 +1300,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             isNumeric: false,
             onChanged: (v) => p.setLabelExtension(v),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           // Material Scanning Card
           _buildMaterialScanSection(p),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           // Print Label Button
           SizedBox(
             width: double.infinity,
@@ -1315,7 +1329,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 shape: RoundedRectangleBorder(borderRadius: AppConfig.borderRadius),
               ),
               icon: p.isLoading
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
@@ -1323,7 +1337,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         color: AppConfig.textMuted,
                       ),
                     )
-                  : const Icon(Icons.print_rounded, size: 20),
+                  : Icon(Icons.print_rounded, size: 20),
               label: Text(
                 p.isLoading ? '印刷中... / Printing...' : '現品票ラベル印刷 / Print Label',
                 style: GoogleFonts.outfit(
@@ -1407,7 +1421,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label, style: GoogleFonts.outfit(fontSize: 11, color: AppConfig.textMuted)),
-          const SizedBox(height: 2),
+          SizedBox(height: 2),
           TextFormField(
             controller: controller,
             focusNode: focusNode,
@@ -1492,7 +1506,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label, style: GoogleFonts.outfit(fontSize: 11, color: AppConfig.textMuted)),
-                const SizedBox(height: 2),
+                SizedBox(height: 2),
                 Text(
                   value,
                   style: GoogleFonts.outfit(
@@ -1527,11 +1541,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 Row(
                   children: [
                     Expanded(child: _buildWorkerSelectBox(context, p, true)),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(child: _buildDateSelectBox(context, p)),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
@@ -1542,7 +1556,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         onTap: () => _pickTime(context, (t) async => p.setKensaStartTime(t)),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: _buildTimeSelectBox(
                         context,
@@ -1553,12 +1567,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 Text(
                   '検査カウンター (タップでカウントアップ) / Inspection Counters (Tap to increment)',
                   style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppConfig.textSecondary),
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: 10),
                 GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -1600,8 +1614,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
             child: Row(
               children: [
-                const Icon(Icons.warning_amber_rounded, color: AppConfig.warningColor, size: 20),
-                const SizedBox(width: 10),
+                Icon(Icons.warning_amber_rounded, color: AppConfig.warningColor, size: 20),
+                SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1616,14 +1630,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.delete_outline_rounded, color: AppConfig.ngColor, size: 20),
+                  icon: Icon(Icons.delete_outline_rounded, color: AppConfig.ngColor, size: 20),
                   onPressed: () => p.deleteMaintenanceRecord(i),
                 ),
               ],
             ),
           );
         }),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         SizedBox(
           width: double.infinity,
           height: 48,
@@ -1633,10 +1647,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               builder: (_) => const MaintenanceDialog(),
             ),
             style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: AppConfig.warningColor),
+              side: BorderSide(color: AppConfig.warningColor),
               foregroundColor: AppConfig.warningColor,
             ),
-            icon: const Icon(Icons.add_rounded),
+            icon: Icon(Icons.add_rounded),
             label: Text('トラブル保全を追加 / Add Trouble Log', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
           ),
         ),
@@ -1661,14 +1675,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               Row(
                 children: [
                   Icon(icon, size: 18, color: AppConfig.primaryAccent),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Text(title, style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.bold, color: AppConfig.textPrimary)),
                 ],
               ),
               if (trailing != null) trailing,
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           child,
         ],
       ),
@@ -1686,7 +1700,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           'サイクル品質確認 / Cycle Quality Verification',
           style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.bold, color: AppConfig.textSecondary),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         _buildVisualCheckCard(
           context: context,
           title: '初物チェック / Hatsumono Check',
@@ -1695,7 +1709,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           checked: p.hatsumonoChecked,
           onTap: () => _capturePhoto(context, true),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         _buildVisualCheckCard(
           context: context,
           title: '後物チェック / Atomono Check',
@@ -1704,7 +1718,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           checked: p.atomonoChecked,
           onTap: () => _capturePhoto(context, false),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: 24),
         _buildMaterialLabelSection(p),
       ],
     );
@@ -1750,14 +1764,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         cacheWidth: 200,
                       ),
                     )
-                  : const Icon(
+                  : Icon(
                       Icons.add_a_photo_rounded,
                       color: AppConfig.textMuted,
                       size: 32,
                     ),
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1770,7 +1784,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     color: AppConfig.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   subTitle,
                   style: GoogleFonts.outfit(
@@ -1779,7 +1793,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     height: 1.4,
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
@@ -1797,7 +1811,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         color: checked ? AppConfig.okColor : AppConfig.ngColor,
                         size: 14,
                       ),
-                      const SizedBox(width: 6),
+                      SizedBox(width: 6),
                       Text(
                         checked ? '検証完了 / OK' : '検証未完了 / Pending',
                         style: GoogleFonts.outfit(
@@ -1834,20 +1848,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         children: [
           Row(
             children: [
-              const Icon(Icons.label_rounded, size: 18, color: AppConfig.primaryAccent),
-              const SizedBox(width: 8),
+              Icon(Icons.label_rounded, size: 18, color: AppConfig.primaryAccent),
+              SizedBox(width: 8),
               Text(
                 '材料ラベル写真撮影 / Material Label Photos',
                 style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.bold, color: AppConfig.textPrimary),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Text(
             'スキャンされたロット数: $requiredPhotos に対して、$currentPhotos 枚の写真が撮影されています。',
             style: GoogleFonts.outfit(fontSize: 12, color: AppConfig.textSecondary, height: 1.4),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           if (p.materialLabelPhotos.isNotEmpty) ...[
             GridView.builder(
               shrinkWrap: true,
@@ -1876,23 +1890,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     child: GestureDetector(
                       onTap: () => p.removeMaterialLabelPhoto(i),
                       child: Container(
-                        decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                        decoration: BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
                         padding: const EdgeInsets.all(4),
-                        child: const Icon(Icons.close_rounded, size: 12, color: Colors.white),
+                        child: Icon(Icons.close_rounded, size: 12, color: Colors.white),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
           ],
           SizedBox(
             width: double.infinity,
             height: 48,
             child: OutlinedButton.icon(
               onPressed: () => _captureMaterialLabelPhoto(context),
-              icon: const Icon(Icons.add_a_photo_rounded),
+              icon: Icon(Icons.add_a_photo_rounded),
               label: Text('写真を撮影する / Capture Label', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
             ),
           ),
@@ -1910,7 +1924,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       children: [
         // Real-time recalculation card
         _buildRecalculationSummaryCard(p),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
 
         // Read-only specs
         Container(
@@ -1927,16 +1941,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 '製品情報 (編集不可) / Product Info (Read-Only)',
                 style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.bold, color: AppConfig.textMuted),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               _reviewInfoRow('背番号 / Sebanggo', p.sebanggo, isBold: true),
-              const Divider(color: AppConfig.borderSecondary),
+              Divider(color: AppConfig.borderSecondary),
               _reviewInfoRow('品番 / Part Number', p.activeProduct.productNumber),
-              const Divider(color: AppConfig.borderSecondary),
+              Divider(color: AppConfig.borderSecondary),
               _reviewInfoRow('車型 / Model', p.activeProduct.model),
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
 
         // Editable components summary
         Container(
@@ -1953,13 +1967,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 '記録情報の編集確認 / Review & Edit Quantities',
                 style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.bold, color: AppConfig.textSecondary),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               // Worker name
               _buildReviewFieldContainer(
                 label: '作業者名 / Worker Name',
                 child: _buildWorkerSelectBox(context, p, false),
               ),
-              const Divider(height: 24, color: AppConfig.borderSecondary),
+              Divider(height: 24, color: AppConfig.borderSecondary),
               // Process Qty
               _buildReviewFieldContainer(
                 label: '加工総数 / Total Qty',
@@ -1970,7 +1984,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   onChanged: (v) => p.setProcessQuantity(int.tryParse(v) ?? 0),
                 ),
               ),
-              const Divider(height: 24, color: AppConfig.borderSecondary),
+              Divider(height: 24, color: AppConfig.borderSecondary),
               // Shot count
               _buildReviewFieldContainer(
                 label: '総ショット数 / Total Shots',
@@ -1983,7 +1997,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         onChanged: (v) => p.setShotCount(int.tryParse(v) ?? 0),
                       ),
               ),
-              const Divider(height: 24, color: AppConfig.borderSecondary),
+              Divider(height: 24, color: AppConfig.borderSecondary),
               // Defect counts
               _buildReviewFieldContainer(
                 label: '不良品内訳 / Defect Breakdown',
@@ -1996,7 +2010,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         if (diff < 0) p.decrementDcpCounter(18);
                       }),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     Expanded(
                       child: _buildInlineCounter('加工不良', p.processingDefect, (val) {
                         final diff = val - p.processingDefect;
@@ -2004,7 +2018,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         if (diff < 0) p.decrementDcpCounter(19);
                       }),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     Expanded(
                       child: _buildInlineCounter('その他', p.otherDefect, (val) {
                         final diff = val - p.otherDefect;
@@ -2015,7 +2029,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ],
                 ),
               ),
-              const Divider(height: 24, color: AppConfig.borderSecondary),
+              Divider(height: 24, color: AppConfig.borderSecondary),
               // Comments
               _buildReviewFieldContainer(
                 label: 'DCP コメント / DCP Comments',
@@ -2042,7 +2056,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -2068,7 +2082,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Row(
             children: [
               _buildSummaryCell('加工総数\nQty', p.processQuantity.toString(), AppConfig.onAccent),
@@ -2094,7 +2108,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: color),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             label,
             style: GoogleFonts.outfit(fontSize: 10, color: AppConfig.textMuted, height: 1.2),
@@ -2125,7 +2139,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppConfig.textSecondary)),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         child,
       ],
     );
@@ -2142,7 +2156,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       child: Column(
         children: [
           Text(label, style: GoogleFonts.outfit(fontSize: 11, color: AppConfig.textSecondary)),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -2151,7 +2165,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 height: 32,
                 child: GestureDetector(
                   onTap: val > 0 ? () => onUpdate(val - 1) : null,
-                  child: const Icon(Icons.remove_circle_outline_rounded, size: 20, color: AppConfig.textMuted),
+                  child: Icon(Icons.remove_circle_outline_rounded, size: 20, color: AppConfig.textMuted),
                 ),
               ),
               Padding(
@@ -2163,7 +2177,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 height: 32,
                 child: GestureDetector(
                   onTap: () => onUpdate(val + 1),
-                  child: const Icon(Icons.add_circle_outline_rounded, size: 20, color: AppConfig.primaryAccent),
+                  child: Icon(Icons.add_circle_outline_rounded, size: 20, color: AppConfig.primaryAccent),
                 ),
               ),
             ],
@@ -2201,12 +2215,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ? Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const SizedBox(
+                        SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(color: AppConfig.onAccent, strokeWidth: 2),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12),
                         Text(
                           '提出データを送信中... / Submitting...',
                           style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppConfig.textSecondary),
@@ -2216,8 +2230,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.send_rounded, color: AppConfig.onAccent, size: 22),
-                        const SizedBox(width: 12),
+                        Icon(Icons.send_rounded, color: AppConfig.onAccent, size: 22),
+                        SizedBox(width: 12),
                         Text(
                           '記録を提出 / Submit Daily Report',
                           style: GoogleFonts.outfit(fontSize: 17, fontWeight: FontWeight.bold, color: AppConfig.onAccent),
@@ -2260,17 +2274,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         product.imageUrl,
                         fit: BoxFit.cover,
                         cacheWidth: 150,
-                        errorBuilder: (_, __, ___) => const Center(
+                        errorBuilder: (_, __, ___) => Center(
                           child: Icon(Icons.broken_image_rounded, color: AppConfig.textMuted, size: 28),
                         ),
                       )
-                    : const Center(
+                    : Center(
                         child: Icon(Icons.image_not_supported_rounded, color: AppConfig.textMuted, size: 28),
                       ),
               ),
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -2283,7 +2297,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     color: AppConfig.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   '品番: ${product.productNumber.isNotEmpty ? product.productNumber : '未スキャン / Not Scanned'}',
                   style: GoogleFonts.outfit(
@@ -2326,23 +2340,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                     minimumSize: const Size(0, 36),
                     shape: RoundedRectangleBorder(borderRadius: AppConfig.radiusMd),
-                    side: const BorderSide(color: AppConfig.primaryAccent),
+                    side: BorderSide(color: AppConfig.primaryAccent),
                   ),
-                  icon: const Icon(Icons.qr_code_scanner_rounded, size: 14),
+                  icon: Icon(Icons.qr_code_scanner_rounded, size: 14),
                   label: Text('スキャン / Scan', style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
           ),
           if (p.materialLots.isNotEmpty) ...[
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             Wrap(
               spacing: 6,
               runSpacing: 6,
               children: p.materialLots.map((lot) {
                 return Chip(
                   backgroundColor: AppConfig.cardColor,
-                  side: const BorderSide(color: AppConfig.borderSecondary),
+                  side: BorderSide(color: AppConfig.borderSecondary),
                   padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   label: Text(
@@ -2353,7 +2367,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     p.removeMaterialLot(lot);
                     _showSnack(context, 'ロット $lot を削除しました / Removed Lot: $lot');
                   },
-                  deleteIcon: const Icon(Icons.cancel_rounded, size: 14, color: AppConfig.textMuted),
+                  deleteIcon: Icon(Icons.cancel_rounded, size: 14, color: AppConfig.textMuted),
                 );
               }).toList(),
             ),
@@ -2434,7 +2448,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 child: Image.network(
                   imageUrl,
                   fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const Center(
+                  errorBuilder: (_, __, ___) => Center(
                     child: Icon(Icons.broken_image_rounded, color: Colors.white, size: 64),
                   ),
                 ),
@@ -2444,7 +2458,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               top: 40,
               right: 20,
               child: IconButton(
-                icon: const Icon(Icons.close_rounded, color: Colors.white, size: 32),
+                icon: Icon(Icons.close_rounded, color: Colors.white, size: 32),
                 onPressed: () => Navigator.of(ctx).pop(),
               ),
             ),
@@ -2513,7 +2527,7 @@ class TouchCounterCard extends StatelessWidget {
               subLabel,
               style: GoogleFonts.outfit(fontSize: 11, color: AppConfig.textMuted),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Text(
               '$value',
               style: GoogleFonts.outfit(
@@ -2522,7 +2536,7 @@ class TouchCounterCard extends StatelessWidget {
                 color: value > 0 ? color : AppConfig.textPrimary,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             GestureDetector(
               onTap: () {
                 HapticFeedback.lightImpact();
@@ -2530,11 +2544,11 @@ class TouchCounterCard extends StatelessWidget {
               },
               child: Container(
                 padding: const EdgeInsets.all(6),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: AppConfig.borderSecondary,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.remove_rounded, color: AppConfig.textSecondary, size: 18),
+                child: Icon(Icons.remove_rounded, color: AppConfig.textSecondary, size: 18),
               ),
             ),
           ],
@@ -2593,7 +2607,7 @@ class CompactTouchCounterCard extends StatelessWidget {
                   subLabel,
                   style: GoogleFonts.outfit(fontSize: 10, color: AppConfig.textMuted),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2),
                 Text(
                   '$value',
                   style: GoogleFonts.outfit(
@@ -2614,11 +2628,11 @@ class CompactTouchCounterCard extends StatelessWidget {
                 },
                 child: Container(
                   padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: AppConfig.borderSecondary,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.remove_rounded, color: AppConfig.textSecondary, size: 12),
+                  child: Icon(Icons.remove_rounded, color: AppConfig.textSecondary, size: 12),
                 ),
               ),
             ),

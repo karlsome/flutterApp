@@ -41,7 +41,7 @@ class BreakTimeSection extends StatelessWidget {
           else
             _buildStartBreakButton(context, p),
 
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
 
           // 2. Completed Breaks List
           if (completedBreaks.isNotEmpty) ...[
@@ -53,7 +53,7 @@ class BreakTimeSection extends StatelessWidget {
                 color: AppConfig.textSecondary,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -92,7 +92,7 @@ class BreakTimeSection extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,10 +103,10 @@ class BreakTimeSection extends StatelessWidget {
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
                                 color: AppConfig.textPrimary,
-                                fontFeatures: const [FontFeature.tabularFigures()],
+                                fontFeatures: [FontFeature.tabularFigures()],
                               ),
                             ),
-                            const SizedBox(height: 2),
+                            SizedBox(height: 2),
                             Text(
                               '休憩時間: $duration 分 / Duration: $duration mins',
                               style: GoogleFonts.outfit(
@@ -118,7 +118,7 @@ class BreakTimeSection extends StatelessWidget {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.delete_outline_rounded, color: AppConfig.ngColor, size: 20),
+                        icon: Icon(Icons.delete_outline_rounded, color: AppConfig.ngColor, size: 20),
                         onPressed: () {
                           p.removeBreak(i);
                         },
@@ -145,8 +145,8 @@ class BreakTimeSection extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.timer_rounded, color: AppConfig.primaryAccent, size: 18),
-                    const SizedBox(width: 10),
+                    Icon(Icons.timer_rounded, color: AppConfig.primaryAccent, size: 18),
+                    SizedBox(width: 10),
                     Text(
                       '合計休憩時間 / Total Break',
                       style: GoogleFonts.outfit(fontSize: 13, color: AppConfig.textSecondary),
@@ -186,7 +186,7 @@ class BreakTimeSection extends StatelessWidget {
           ),
           elevation: 2,
         ),
-        icon: const Icon(Icons.play_circle_outline_rounded, size: 22),
+        icon: Icon(Icons.play_circle_outline_rounded, size: 22),
         label: Text(
           '休憩を開始 / Start Break',
           style: GoogleFonts.outfit(
@@ -212,13 +212,13 @@ class BreakTimeSection extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: AppConfig.warningColor,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.coffee_rounded, color: AppConfig.onAccent, size: 20),
+                child: Icon(Icons.coffee_rounded, color: AppConfig.onAccent, size: 20),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -231,7 +231,7 @@ class BreakTimeSection extends StatelessWidget {
                         color: AppConfig.textPrimary,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     Text(
                       'タイマーがバックグラウンドで動作しています。',
                       style: GoogleFonts.outfit(
@@ -244,7 +244,7 @@ class BreakTimeSection extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           SizedBox(
             height: AppConfig.touchTarget,
             width: double.infinity,
@@ -254,12 +254,12 @@ class BreakTimeSection extends StatelessWidget {
               },
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppConfig.warningColor,
-                side: const BorderSide(color: AppConfig.warningColor, width: 1.5),
+                side: BorderSide(color: AppConfig.warningColor, width: 1.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: AppConfig.borderRadius,
                 ),
               ),
-              icon: const Icon(Icons.timer_rounded, size: 18),
+              icon: Icon(Icons.timer_rounded, size: 18),
               label: Text(
                 'タイマーを表示 / Show Timer',
                 style: GoogleFonts.outfit(

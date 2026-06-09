@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'config/app_config.dart';
 import 'providers/report_provider.dart';
+import 'providers/theme_provider.dart';
 import 'screens/setup_screen.dart';
 import 'screens/home_screen.dart';
 
@@ -25,7 +26,7 @@ void main() async {
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.dark,
-      systemNavigationBarColor: AppConfig.backgroundColor,
+      systemNavigationBarColor: Colors.transparent,
       systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );
@@ -36,8 +37,11 @@ void main() async {
   final bool hasSetup = factory != null && machine != null && factory.isNotEmpty && machine.isNotEmpty;
 
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => ReportProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ReportProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+      ],
       child: KurachiApp(
         hasSetup: hasSetup,
         initialFactory: factory,
@@ -79,29 +83,35 @@ class _KurachiAppState extends State<KurachiApp> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return MaterialApp(
       title: 'DCP iReporter',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        brightness: Brightness.light,
+        brightness: themeProvider.isDark ? Brightness.dark : Brightness.light,
         scaffoldBackgroundColor: AppConfig.backgroundColor,
-        colorScheme: const ColorScheme.light(
-          surface: AppConfig.backgroundColor,
+        colorScheme: ColorScheme(
+          brightness: themeProvider.isDark ? Brightness.dark : Brightness.light,
+          surface: AppConfig.cardColor,
+          onSurface: AppConfig.textPrimary,
           primary: AppConfig.primaryAccent,
-          onPrimary: Colors.white,
+          onPrimary: AppConfig.onAccent,
           secondary: AppConfig.okColor,
+          onSecondary: Colors.white,
           error: AppConfig.ngColor,
+          onError: Colors.white,
         ),
         textTheme: GoogleFonts.outfitTextTheme(
-          ThemeData.light().textTheme,
+          (themeProvider.isDark ? ThemeData.dark() : ThemeData.light()).textTheme,
         ),
         cardTheme: CardThemeData(
           color: AppConfig.cardColor,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: AppConfig.cardRadius,
-            side: const BorderSide(color: AppConfig.borderSecondary, width: 1),
+            side: BorderSide(color: AppConfig.borderSecondary, width: 1),
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
@@ -110,18 +120,18 @@ class _KurachiAppState extends State<KurachiApp> {
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           border: OutlineInputBorder(
             borderRadius: AppConfig.borderRadius,
-            borderSide: const BorderSide(color: AppConfig.borderSecondary),
+            borderSide: BorderSide(color: AppConfig.borderSecondary),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: AppConfig.borderRadius,
-            borderSide: const BorderSide(color: AppConfig.borderSecondary),
+            borderSide: BorderSide(color: AppConfig.borderSecondary),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: AppConfig.borderRadius,
-            borderSide: const BorderSide(color: AppConfig.primaryAccent, width: 2),
+            borderSide: BorderSide(color: AppConfig.primaryAccent, width: 2),
           ),
-          labelStyle: const TextStyle(color: AppConfig.textSecondary),
-          hintStyle: const TextStyle(color: AppConfig.textMuted),
+          labelStyle: TextStyle(color: AppConfig.textSecondary),
+          hintStyle: TextStyle(color: AppConfig.textMuted),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
@@ -140,7 +150,7 @@ class _KurachiAppState extends State<KurachiApp> {
           style: OutlinedButton.styleFrom(
             minimumSize: const Size(double.minPositive, AppConfig.buttonHeight),
             shape: RoundedRectangleBorder(borderRadius: AppConfig.borderRadius),
-            side: const BorderSide(color: AppConfig.borderSecondary),
+            side: BorderSide(color: AppConfig.borderSecondary),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
             textStyle: GoogleFonts.outfit(
               fontSize: 16,

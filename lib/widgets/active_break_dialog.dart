@@ -84,20 +84,20 @@ class _ActiveBreakDialogState extends State<ActiveBreakDialog> {
                     // Header / Context
                     Column(
                       children: [
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24),
                         Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
                             color: AppConfig.primaryAccent.withOpacity(0.12),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.coffee_rounded,
                             color: AppConfig.primaryAccent,
                             size: 48,
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        SizedBox(height: 20),
                         Text(
                           '休憩中 / On Break',
                           style: GoogleFonts.outfit(
@@ -106,7 +106,7 @@ class _ActiveBreakDialogState extends State<ActiveBreakDialog> {
                             color: AppConfig.onAccent,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8),
                         Text(
                           '開始時刻: $startTimeStr (Started at $startTimeStr)',
                           style: GoogleFonts.outfit(
@@ -127,12 +127,12 @@ class _ActiveBreakDialogState extends State<ActiveBreakDialog> {
                             fontSize: 72,
                             fontWeight: FontWeight.w900,
                             color: AppConfig.primaryAccent,
-                            fontFeatures: const [
+                            fontFeatures: [
                               FontFeature.tabularFigures(),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
                         Text(
                           '経過時間 / Elapsed Time',
                           style: GoogleFonts.outfit(
@@ -160,7 +160,7 @@ class _ActiveBreakDialogState extends State<ActiveBreakDialog> {
                                 Navigator.of(context).pop();
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: const Text('休憩を終了し、記録しました / Break finished & logged'),
+                                    content: Text('休憩を終了し、記録しました / Break finished & logged'),
                                     backgroundColor: AppConfig.okColor,
                                     behavior: SnackBarBehavior.floating,
                                     shape: RoundedRectangleBorder(borderRadius: AppConfig.borderRadius),
@@ -176,7 +176,7 @@ class _ActiveBreakDialogState extends State<ActiveBreakDialog> {
                                   borderRadius: AppConfig.cardRadius,
                                 ),
                               ),
-                              icon: const Icon(Icons.stop_circle_rounded, size: 28),
+                              icon: Icon(Icons.stop_circle_rounded, size: 28),
                               label: Text(
                                 '休憩終了 / Finish Break',
                                 style: GoogleFonts.outfit(

@@ -120,7 +120,7 @@ class _SetupScreenState extends State<SetupScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [Color(0xFF0F172A), Color(0xFF1E1B4B)],
             begin: Alignment.topLeft,
@@ -142,19 +142,19 @@ class _SetupScreenState extends State<SetupScreen>
                       children: [
                         // Logo / Header
                         _buildHeader(),
-                        const SizedBox(height: 48),
+                        SizedBox(height: 48),
 
                         // Factory Selector
                         _buildSectionLabel('工場 / Factory'),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
                         _buildFactorySelector(),
-                        const SizedBox(height: 28),
+                        SizedBox(height: 28),
 
                         // Machine Selector
                         _buildSectionLabel('設備番号 / Machine'),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
                         _buildMachineGrid(),
-                        const SizedBox(height: 48),
+                        SizedBox(height: 48),
 
                         // Proceed Button
                         _buildProceedButton(),
@@ -187,9 +187,9 @@ class _SetupScreenState extends State<SetupScreen>
               ),
             ],
           ),
-          child: const Icon(Icons.factory_rounded, color: Colors.white, size: 40),
+          child: Icon(Icons.factory_rounded, color: Colors.white, size: 40),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: 24),
         Text(
           'DCP iReporter',
           style: GoogleFonts.outfit(
@@ -199,7 +199,7 @@ class _SetupScreenState extends State<SetupScreen>
             letterSpacing: -0.5,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         Text(
           '作業環境を選択してください\nPlease select your work environment',
           textAlign: TextAlign.center,
@@ -227,7 +227,7 @@ class _SetupScreenState extends State<SetupScreen>
 
   Widget _buildFactorySelector() {
     if (_loadingFactories) {
-      return const Center(
+      return Center(
         child: SizedBox(
           width: 24,
           height: 24,
@@ -295,7 +295,7 @@ class _SetupScreenState extends State<SetupScreen>
 
   Widget _buildMachineGrid() {
     if (_loadingEquipments) {
-      return const Center(
+      return Center(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 36),
           child: CircularProgressIndicator(
@@ -387,7 +387,7 @@ class _SetupScreenState extends State<SetupScreen>
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
                             color: AppConfig.backgroundColor,
-                            child: const Icon(
+                            child: Icon(
                               Icons.precision_manufacturing_rounded,
                               color: AppConfig.textMuted,
                               size: 32,
@@ -398,7 +398,7 @@ class _SetupScreenState extends State<SetupScreen>
                           if (loadingProgress == null) return child;
                           return Container(
                             color: AppConfig.backgroundColor,
-                            child: const Center(
+                            child: Center(
                               child: SizedBox(
                                 width: 20,
                                 height: 20,
@@ -413,7 +413,7 @@ class _SetupScreenState extends State<SetupScreen>
                       )
                     : Container(
                         color: AppConfig.backgroundColor,
-                        child: const Icon(
+                        child: Icon(
                           Icons.precision_manufacturing_rounded,
                           color: AppConfig.textMuted,
                           size: 32,
@@ -436,7 +436,7 @@ class _SetupScreenState extends State<SetupScreen>
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4),
                   Text(
                     eq.model.isNotEmpty ? 'Model: ${eq.model}' : 'Maker: ${eq.manufacturer.isNotEmpty ? eq.manufacturer : "-"}',
                     style: GoogleFonts.outfit(
@@ -446,7 +446,7 @@ class _SetupScreenState extends State<SetupScreen>
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6),
                   Row(
                     children: [
                       if (eq.voltage.isNotEmpty)
@@ -465,7 +465,7 @@ class _SetupScreenState extends State<SetupScreen>
                             ),
                           ),
                         ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: 4),
                       if (eq.weight > 0)
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -508,7 +508,7 @@ class _SetupScreenState extends State<SetupScreen>
               shadowColor: AppConfig.primaryAccent.withOpacity(0.5),
             ),
             child: provider.isLoading
-                ? const SizedBox(
+                ? SizedBox(
                     width: 24,
                     height: 24,
                     child: CircularProgressIndicator(
@@ -526,8 +526,8 @@ class _SetupScreenState extends State<SetupScreen>
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      const Icon(Icons.arrow_forward_rounded, size: 22),
+                      SizedBox(width: 12),
+                      Icon(Icons.arrow_forward_rounded, size: 22),
                     ],
                   ),
           ),
