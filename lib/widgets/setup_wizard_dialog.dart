@@ -167,18 +167,18 @@ class _SetupWizardDialogState extends State<SetupWizardDialog> {
             // Modal Title
             Container(
               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppConfig.cardColor,
                 borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(18),
-                  topRight: Radius.circular(18),
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
                 ),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.security_rounded, color: AppConfig.primaryAccent, size: 24),
-                  const SizedBox(width: 12),
-                  const Expanded(
+                  Icon(Icons.security_rounded, color: AppConfig.primaryAccent, size: 24),
+                  SizedBox(width: 12),
+                  Expanded(
                     child: Text(
                       '段取りスキャン認証 / Setup Validation Wizard',
                       style: TextStyle(
@@ -196,7 +196,7 @@ class _SetupWizardDialogState extends State<SetupWizardDialog> {
                     ),
                     child: Text(
                       'STEP ${p.setupStep} / 3',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppConfig.warningColor,
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
@@ -254,12 +254,12 @@ class _SetupWizardDialogState extends State<SetupWizardDialog> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline_rounded, color: AppConfig.ngColor, size: 20),
-                      const SizedBox(width: 10),
+                      Icon(Icons.error_outline_rounded, color: AppConfig.ngColor, size: 20),
+                      SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           _errorMessage,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppConfig.ngColor,
                             fontSize: 13,
                             height: 1.4,
@@ -285,10 +285,10 @@ class _SetupWizardDialogState extends State<SetupWizardDialog> {
                       },
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        side: const BorderSide(color: AppConfig.borderSecondary),
+                        side: BorderSide(color: AppConfig.borderSecondary),
                         shape: RoundedRectangleBorder(borderRadius: AppConfig.borderRadius),
                       ),
-                      child: const Text(
+                      child: Text(
                         '中止・初期化 / Cancel & Reset',
                         style: TextStyle(color: AppConfig.textSecondary, fontWeight: FontWeight.bold),
                       ),
@@ -316,7 +316,7 @@ class _SetupWizardDialogState extends State<SetupWizardDialog> {
                 ? AppConfig.okColor
                 : (isActive ? AppConfig.primaryAccent : AppConfig.borderSecondary),
             child: isDone
-                ? const Icon(Icons.check, color: Colors.white, size: 18)
+                ? Icon(Icons.check, color: AppConfig.onAccent, size: 18)
                 : Text(
                     '$step',
                     style: TextStyle(
@@ -325,7 +325,7 @@ class _SetupWizardDialogState extends State<SetupWizardDialog> {
                     ),
                   ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6),
           Text(
             label,
             textAlign: TextAlign.center,
@@ -355,16 +355,16 @@ class _SetupWizardDialogState extends State<SetupWizardDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(
+        Text(
           '1. カンバンの背番号をスキャンしてください\nScan product kanban to begin setup validation.',
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 14, color: AppConfig.textSecondary, height: 1.5),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: 24),
         ElevatedButton.icon(
           onPressed: _isProcessing ? null : () => _startStep1Scan(p),
-          icon: const Icon(Icons.qr_code_scanner_rounded, size: 22, color: Colors.white),
-          label: const Text('背番号スキャン / Scan Kanban', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          icon: Icon(Icons.qr_code_scanner_rounded, size: 22, color: AppConfig.onAccent),
+          label: Text('背番号スキャン / Scan Kanban', style: TextStyle(color: AppConfig.onAccent, fontWeight: FontWeight.bold)),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppConfig.primaryAccent,
             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -383,29 +383,29 @@ class _SetupWizardDialogState extends State<SetupWizardDialog> {
       children: [
         Row(
           children: [
-            const Icon(Icons.info_outline_rounded, color: AppConfig.warningColor, size: 20),
-            const SizedBox(width: 8),
-            const Text(
+            Icon(Icons.info_outline_rounded, color: AppConfig.warningColor, size: 20),
+            SizedBox(width: 8),
+            Text(
               '材料照合 / Material Validation',
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppConfig.textPrimary),
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         Text(
           '背番号: ${p.sebanggo}',
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppConfig.primaryAccent),
+          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppConfig.primaryAccent),
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: 6),
         Text(
           '指定材料コード / Expected Material Code:\n${p.activeProduct.materialCode.replaceAll(',', ' or ')}',
-          style: const TextStyle(fontSize: 14, color: AppConfig.textSecondary, height: 1.5, fontWeight: FontWeight.w600),
+          style: TextStyle(fontSize: 14, color: AppConfig.textSecondary, height: 1.5, fontWeight: FontWeight.w600),
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: 20),
         ElevatedButton.icon(
           onPressed: () => _startStep2Scan(p),
-          icon: const Icon(Icons.qr_code_scanner_rounded, size: 22, color: Colors.white),
-          label: const Text('材料ラベルをスキャン / Scan Material', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          icon: Icon(Icons.qr_code_scanner_rounded, size: 22, color: AppConfig.onAccent),
+          label: Text('材料ラベルをスキャン / Scan Material', style: TextStyle(color: AppConfig.onAccent, fontWeight: FontWeight.bold)),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppConfig.primaryAccent,
             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -424,24 +424,24 @@ class _SetupWizardDialogState extends State<SetupWizardDialog> {
         children: [
           Row(
             children: [
-              const Icon(Icons.grid_view_rounded, color: AppConfig.primaryAccent, size: 20),
-              const SizedBox(width: 8),
-              const Text(
+              Icon(Icons.grid_view_rounded, color: AppConfig.primaryAccent, size: 20),
+              SizedBox(width: 8),
+              Text(
                 'トムソンボード検証 / Thomson Board verification',
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppConfig.textPrimary),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Text(
             '指定型番 / Expected Board Code:\n${p.activeProduct.kataban}',
-            style: const TextStyle(fontSize: 14, color: AppConfig.textSecondary, height: 1.5, fontWeight: FontWeight.w600),
+            style: TextStyle(fontSize: 14, color: AppConfig.textSecondary, height: 1.5, fontWeight: FontWeight.w600),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: () => _startStep3BoardScan(p),
-            icon: const Icon(Icons.qr_code_scanner_rounded, size: 22, color: Colors.white),
-            label: const Text('型番QRをスキャン / Scan Thomson Board', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            icon: Icon(Icons.qr_code_scanner_rounded, size: 22, color: AppConfig.onAccent),
+            label: Text('型番QRをスキャン / Scan Thomson Board', style: TextStyle(color: AppConfig.onAccent, fontWeight: FontWeight.bold)),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppConfig.primaryAccent,
               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -458,33 +458,33 @@ class _SetupWizardDialogState extends State<SetupWizardDialog> {
       children: [
         Row(
           children: [
-            const Icon(Icons.sensors_rounded, color: AppConfig.okColor, size: 20),
-            const SizedBox(width: 8),
-            const Text(
+            Icon(Icons.sensors_rounded, color: AppConfig.okColor, size: 20),
+            SizedBox(width: 8),
+            Text(
               'マシン送信 / Send Details to Machine',
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppConfig.textPrimary),
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         Text(
           '背番号「${p.sebanggo}」の切断プログラムデータをマシンへ送信します。\n'
           'Ready to dispatch program to machine ${p.selectedMachine}.',
-          style: const TextStyle(fontSize: 13, color: AppConfig.textSecondary, height: 1.5),
+          style: TextStyle(fontSize: 13, color: AppConfig.textSecondary, height: 1.5),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: 24),
         ElevatedButton.icon(
           onPressed: p.isSendingToNC ? null : () => _sendToNCCommand(p),
           icon: p.isSendingToNC
-              ? const SizedBox(
+              ? SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                  child: CircularProgressIndicator(color: AppConfig.onAccent, strokeWidth: 2),
                 )
-              : const Icon(Icons.send_rounded, size: 20, color: Colors.white),
+              : Icon(Icons.send_rounded, size: 20, color: AppConfig.onAccent),
           label: Text(
             p.isSendingToNC ? '送信中... / Sending...' : 'マシンへ送信 / Send to Machine',
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            style: TextStyle(color: AppConfig.onAccent, fontWeight: FontWeight.bold),
           ),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppConfig.okColor,

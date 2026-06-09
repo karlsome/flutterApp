@@ -32,7 +32,7 @@ class _MaintenanceDialogState extends State<MaintenanceDialog> {
       initialTime: TimeOfDay.now(),
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.dark(
+          colorScheme: ColorScheme.dark(
             primary: AppConfig.warningColor,
             surface: AppConfig.cardColor,
           ),
@@ -101,10 +101,10 @@ class _MaintenanceDialogState extends State<MaintenanceDialog> {
                     color: AppConfig.warningColor.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.build_rounded,
+                  child: Icon(Icons.build_rounded,
                       color: AppConfig.warningColor, size: 22),
                 ),
-                const SizedBox(width: 14),
+                SizedBox(width: 14),
                 Expanded(
                   child: Text(
                     'トラブル記録\nMaintenance Record',
@@ -117,15 +117,15 @@ class _MaintenanceDialogState extends State<MaintenanceDialog> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close_rounded,
+                  icon: Icon(Icons.close_rounded,
                       color: AppConfig.textMuted),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-            const Divider(color: AppConfig.borderSecondary),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
+            Divider(color: AppConfig.borderSecondary),
+            SizedBox(height: 20),
 
             // Time Pickers
             Row(
@@ -135,7 +135,7 @@ class _MaintenanceDialogState extends State<MaintenanceDialog> {
                   value: _startTime,
                   onTap: () => _pickTime(true),
                 )),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(child: _buildTimeTile(
                   label: '終了 / End',
                   value: _endTime,
@@ -150,7 +150,7 @@ class _MaintenanceDialogState extends State<MaintenanceDialog> {
                 padding: const EdgeInsets.only(top: 8),
                 child: _buildDurationBadge(),
               ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
 
             // Comment
             TextField(
@@ -162,23 +162,23 @@ class _MaintenanceDialogState extends State<MaintenanceDialog> {
                 labelText: 'コメント / Comment',
                 alignLabelWithHint: true,
                 filled: true,
-                fillColor: AppConfig.backgroundColor,
+                fillColor: AppConfig.inputFillColor,
                 border: OutlineInputBorder(
                   borderRadius: AppConfig.borderRadius,
-                  borderSide: const BorderSide(color: AppConfig.borderSecondary),
+                  borderSide: BorderSide(color: AppConfig.inputBorderColor),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: AppConfig.borderRadius,
-                  borderSide: const BorderSide(color: AppConfig.borderSecondary),
+                  borderSide: BorderSide(color: AppConfig.inputBorderColor),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: AppConfig.borderRadius,
                   borderSide:
-                      const BorderSide(color: AppConfig.warningColor, width: 2),
+                      BorderSide(color: AppConfig.warningColor, width: 2),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
 
             // Photos section
             Row(
@@ -198,16 +198,16 @@ class _MaintenanceDialogState extends State<MaintenanceDialog> {
                         horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: AppConfig.warningColor.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: AppConfig.radiusMd,
                       border: Border.all(
                           color: AppConfig.warningColor.withOpacity(0.4)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.add_a_photo_rounded,
+                        Icon(Icons.add_a_photo_rounded,
                             size: 14, color: AppConfig.warningColor),
-                        const SizedBox(width: 6),
+                        SizedBox(width: 6),
                         Text(
                           '撮影',
                           style: GoogleFonts.outfit(
@@ -223,13 +223,13 @@ class _MaintenanceDialogState extends State<MaintenanceDialog> {
               ],
             ),
             if (_photos.isNotEmpty) ...[
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
               SizedBox(
                 height: 72,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: _photos.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  separatorBuilder: (_, __) => SizedBox(width: 8),
                   itemBuilder: (_, i) => Stack(
                     children: [
                       ClipRRect(
@@ -248,12 +248,12 @@ class _MaintenanceDialogState extends State<MaintenanceDialog> {
                           onTap: () =>
                               setState(() => _photos.removeAt(i)),
                           child: Container(
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               color: Colors.black54,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.close_rounded,
-                                size: 14, color: Colors.white),
+                            child: Icon(Icons.close_rounded,
+                                size: 14, color: AppConfig.onAccent),
                           ),
                         ),
                       ),
@@ -263,7 +263,7 @@ class _MaintenanceDialogState extends State<MaintenanceDialog> {
               ),
             ],
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
 
             // Save button
             SizedBox(
@@ -273,7 +273,7 @@ class _MaintenanceDialogState extends State<MaintenanceDialog> {
                 onPressed: _save,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppConfig.warningColor,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppConfig.onAccent,
                   shape: RoundedRectangleBorder(
                       borderRadius: AppConfig.borderRadius),
                 ),
@@ -319,7 +319,7 @@ class _MaintenanceDialogState extends State<MaintenanceDialog> {
                 color: AppConfig.textMuted,
               ),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4),
             Row(
               children: [
                 Text(
@@ -330,11 +330,11 @@ class _MaintenanceDialogState extends State<MaintenanceDialog> {
                     color: value.isEmpty
                         ? AppConfig.textMuted
                         : AppConfig.textPrimary,
-                    fontFeatures: const [FontFeature.tabularFigures()],
+                    fontFeatures: [FontFeature.tabularFigures()],
                   ),
                 ),
                 const Spacer(),
-                const Icon(Icons.access_time_rounded,
+                Icon(Icons.access_time_rounded,
                     size: 16, color: AppConfig.textMuted),
               ],
             ),
@@ -355,7 +355,7 @@ class _MaintenanceDialogState extends State<MaintenanceDialog> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: AppConfig.warningColor.withOpacity(0.12),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: AppConfig.radiusMd,
           border:
               Border.all(color: AppConfig.warningColor.withOpacity(0.4)),
         ),

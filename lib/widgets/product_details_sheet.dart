@@ -32,10 +32,10 @@ class ProductDetailsSheet extends StatelessWidget {
                     color: AppConfig.primaryAccent.withAlpha(30),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.info_outline_rounded,
+                  child: Icon(Icons.info_outline_rounded,
                       color: AppConfig.primaryAccent, size: 24),
                 ),
-                const SizedBox(width: 14),
+                SizedBox(width: 14),
                 Expanded(
                   child: Text(
                     '製品詳細 / Product Specs',
@@ -47,13 +47,13 @@ class ProductDetailsSheet extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close_rounded,
+                  icon: Icon(Icons.close_rounded,
                       color: AppConfig.textMuted),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             // Product image section
             Center(
               child: Padding(
@@ -74,7 +74,7 @@ class ProductDetailsSheet extends StatelessWidget {
                           ? Image.network(
                               product.imageUrl,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Center(
+                              errorBuilder: (_, __, ___) => Center(
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -85,7 +85,7 @@ class ProductDetailsSheet extends StatelessWidget {
                                 ),
                               ),
                             )
-                          : const Center(
+                          : Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -149,15 +149,15 @@ class ProductDetailsSheet extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           // Close button
           SizedBox(
             width: double.infinity,
-            height: 52,
-            child: ElevatedButton(
+            height: AppConfig.buttonHeight,
+            child: OutlinedButton(
               onPressed: () => Navigator.pop(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppConfig.borderSecondary,
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: AppConfig.borderSecondary, width: 1.5),
                 shape: RoundedRectangleBorder(
                     borderRadius: AppConfig.borderRadius),
               ),
@@ -166,7 +166,7 @@ class ProductDetailsSheet extends StatelessWidget {
                 style: GoogleFonts.outfit(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: AppConfig.textPrimary,
+                  color: AppConfig.textSecondary,
                 ),
               ),
             ),
@@ -179,7 +179,7 @@ class ProductDetailsSheet extends StatelessWidget {
 
   Widget _row(String label, String value, {bool highlight = false}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 9),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -194,7 +194,7 @@ class ProductDetailsSheet extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           Expanded(
             flex: 3,
             child: Text(
@@ -229,7 +229,7 @@ class ProductDetailsSheet extends StatelessWidget {
                 child: Image.network(
                   imageUrl,
                   fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const Center(
+                  errorBuilder: (_, __, ___) => Center(
                     child: Icon(Icons.broken_image_rounded, color: Colors.white, size: 64),
                   ),
                 ),
@@ -239,7 +239,7 @@ class ProductDetailsSheet extends StatelessWidget {
               top: 40,
               right: 20,
               child: IconButton(
-                icon: const Icon(Icons.close_rounded, color: Colors.white, size: 32),
+                icon: Icon(Icons.close_rounded, color: Colors.white, size: 32),
                 onPressed: () => Navigator.of(ctx).pop(),
               ),
             ),
@@ -250,5 +250,5 @@ class ProductDetailsSheet extends StatelessWidget {
   }
 
   Widget _divider() =>
-      const Divider(color: AppConfig.borderSecondary, height: 1);
+      Divider(color: AppConfig.borderSecondary, height: 1);
 }
